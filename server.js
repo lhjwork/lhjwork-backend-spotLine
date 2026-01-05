@@ -22,6 +22,9 @@ app.use('/api/stores', require('./routes/stores'));
 app.use('/api/recommendations', require('./routes/recommendations'));
 app.use('/api/analytics', require('./routes/analytics'));
 
+// Admin Routes
+app.use('/api/admin', require('./routes/admin'));
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 
@@ -41,7 +44,8 @@ app.get('/api', (req, res) => {
     endpoints: {
       stores: '/api/stores',
       recommendations: '/api/recommendations',
-      analytics: '/api/analytics'
+      analytics: '/api/analytics',
+      admin: '/api/admin'
     }
   });
 });
@@ -55,6 +59,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Spotline 서버가 포트 ${PORT}에서 실행 중입니다`);
   console.log(`API 문서: http://localhost:${PORT}/api`);
+  console.log(`Admin API: http://localhost:${PORT}/api/admin`);
 });
 
 module.exports = app;
