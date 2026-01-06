@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IRecommendation } from "@/types";
+import { IRecommendation } from "../types";
 
 const recommendationSchema = new Schema<IRecommendation>({
   fromStore: {

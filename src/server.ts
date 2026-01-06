@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { specs, swaggerUi } from "./config/swagger";
 
+// 한국 시간대 설정
+process.env.TZ = "Asia/Seoul";
+
 // Routes import
 import storesRouter from "./routes/stores";
 import recommendationsRouter from "./routes/recommendations";
@@ -180,10 +183,22 @@ app.get("/", (req: Request, res: Response) => {
 
 // Health check
 app.get("/health", (req: Request, res: Response) => {
+  const koreanTime = new Date().toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
   res.json({
     status: "OK",
     message: "Spotline API is running (TypeScript)",
     timestamp: new Date().toISOString(),
+    koreanTime: koreanTime,
+    timezone: "Asia/Seoul (KST, UTC+9)",
     version: "2.0.0-ts",
   });
 });

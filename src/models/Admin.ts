@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IAdmin } from "@/types";
+import { IAdmin } from "../types";
 
 const adminSchema = new Schema<IAdmin>({
   username: {

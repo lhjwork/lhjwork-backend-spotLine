@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { IAnalytics } from "@/types";
+import { IAnalytics } from "../types";
+import { getKoreanTime } from "../utils/dateUtils";
 
 const analyticsSchema = new Schema<IAnalytics>({
   qrCode: {
@@ -26,7 +27,7 @@ const analyticsSchema = new Schema<IAnalytics>({
   referrer: String,
   timestamp: {
     type: Date,
-    default: Date.now,
+    default: getKoreanTime, // 한국 시간으로 기본값 설정
   },
   metadata: {
     category: String,

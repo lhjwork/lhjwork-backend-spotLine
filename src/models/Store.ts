@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IStore } from "@/types";
+import { IStore } from "../types";
 
 const storeSchema = new Schema<IStore>({
   name: {
