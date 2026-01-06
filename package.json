@@ -8,15 +8,20 @@
     "dev": "nodemon server.js",
     "test:db": "node scripts/testConnection.js",
     "seed": "node scripts/seedData.js",
+    "create:admin": "node scripts/createAdmin.js",
+    "create:spotline-admin": "node scripts/createSpotlineAdmin.js",
     "install:clean": "pnpm install --frozen-lockfile",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
     "reinstall": "pnpm run clean && pnpm install"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.0.3",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -27,7 +32,12 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "keywords": ["spotline", "qr", "local", "recommendation"],
+  "keywords": [
+    "spotline",
+    "qr",
+    "local",
+    "recommendation"
+  ],
   "author": "",
   "license": "MIT"
 }

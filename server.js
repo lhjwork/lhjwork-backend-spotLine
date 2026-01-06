@@ -21,6 +21,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/spotline'
 app.use('/api/stores', require('./routes/stores'));
 app.use('/api/recommendations', require('./routes/recommendations'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/geocoding', require('./routes/geocoding'));
 
 // Health check
 app.get('/health', (req, res) => {
