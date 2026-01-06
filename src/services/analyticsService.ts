@@ -1,6 +1,6 @@
-import Analytics from "@/models/Analytics";
-import Store from "@/models/Store";
-import { IAnalytics, LogEventRequest } from "@/types";
+import Analytics from "../models/Analytics";
+import Store from "../models/Store";
+import { IAnalytics, LogEventRequest } from "../types";
 
 interface AnalyticsFilters {
   startDate?: string;

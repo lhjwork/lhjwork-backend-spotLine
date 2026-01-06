@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import * as recommendationService from "@/services/recommendationService";
-import { formatResponse } from "@/utils/responseFormatter";
-import { RecommendationQueryParams, CreateRecommendationRequest } from "@/types";
-import { HTTP_STATUS } from "@/utils/constants";
+import * as recommendationService from "../services/recommendationService";
+import { formatResponse } from "../utils/responseFormatter";
+import { RecommendationQueryParams, CreateRecommendationRequest } from "../types";
+import { HTTP_STATUS } from "../utils/constants";
 
 // QR 코드 기반 추천 조회 (핵심 기능)
 export const getRecommendationsByQR = async (req: Request<{ qrId: string }, {}, {}, RecommendationQueryParams>, res: Response): Promise<void> => {

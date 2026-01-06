@@ -1,8 +1,8 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import Admin from "@/models/Admin";
-import { AuthenticatedRequest, JwtPayload } from "@/types";
-import { HTTP_STATUS } from "@/utils/constants";
+import Admin from "../models/Admin";
+import { AuthenticatedRequest, JwtPayload } from "../types";
+import { HTTP_STATUS } from "../utils/constants";
 
 // JWT 토큰 검증 미들웨어
 export const authenticateAdmin = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {

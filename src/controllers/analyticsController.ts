@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import * as analyticsService from "@/services/analyticsService";
-import { formatResponse } from "@/utils/responseFormatter";
-import { LogEventRequest, AnalyticsQueryParams } from "@/types";
-import { HTTP_STATUS } from "@/utils/constants";
+import * as analyticsService from "../services/analyticsService";
+import { formatResponse } from "../utils/responseFormatter";
+import { LogEventRequest, AnalyticsQueryParams } from "../types";
+import { HTTP_STATUS } from "../utils/constants";
 
 // 이벤트 로깅
 export const logEvent = async (req: Request<{}, {}, LogEventRequest>, res: Response): Promise<void> => {

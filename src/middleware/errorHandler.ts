@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { HTTP_STATUS } from "@/utils/constants";
+import { HTTP_STATUS } from "../utils/constants";
 
 // 에러 타입 정의
 interface MongoError extends Error {

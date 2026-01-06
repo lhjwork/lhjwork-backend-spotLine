@@ -1,167 +1,195 @@
-# Spotline Backend - MVC Architecture
+# Spotline Backend (TypeScript)
 
-Spotline QR 기반 로컬 연결 서비스의 백엔드 API (MVC 패턴 적용)
+QR 기반 로컬 연결 서비스 백엔드 API - TypeScript, Node.js, MongoDB, Mongoose 스펙
 
-## 프로젝트 구조
+## 🚀 기술 스택
 
-```
-backendSpotLine/
-├── controllers/          # 컨트롤러 레이어
-│   ├── storeController.js
-│   ├── recommendationController.js
-│   └── analyticsController.js
-├── services/            # 서비스 레이어 (비즈니스 로직)
-│   ├── storeService.js
-│   ├── recommendationService.js
-│   └── analyticsService.js
-├── models/              # 데이터 모델 (MongoDB Schemas)
-│   ├── Store.js
-│   ├── Recommendation.js
-│   └── Analytics.js
-├── routes/              # 라우터 (엔드포인트 정의)
-│   ├── stores.js
-│   ├── recommendations.js
-│   └── analytics.js
-├── middleware/          # 미들웨어
-│   ├── validation.js
-│   └── errorHandler.js
-├── utils/               # 유틸리티
-│   ├── responseFormatter.js
-│   └── constants.js
-├── .npmrc              # pnpm 설정
-└── server.js           # 애플리케이션 진입점
-```
+- **Runtime**: Node.js 18+
+- **Language**: TypeScript 5.3+
+- **Framework**: Express.js
+- **Database**: MongoDB (Mongoose ODM)
+- **Package Manager**: pnpm
+- **Authentication**: JWT
+- **Documentation**: Swagger/OpenAPI 3.0
 
-## MVC 아키텍처
+## 📦 설치 및 실행
 
-### Model (모델)
-- **Store**: 매장 정보 (위치, 카테고리, QR 코드 등)
-- **Recommendation**: 매장 간 추천 관계
-- **Analytics**: 사용자 행동 분석 데이터
+### 1. 의존성 설치
 
-### View (뷰)
-- RESTful API 응답 (JSON 형태)
-- 표준화된 응답 포맷 (ResponseFormatter 사용)
-
-### Controller (컨트롤러)
-- **StoreController**: 매장 관련 요청 처리
-- **RecommendationController**: 추천 관련 요청 처리  
-- **AnalyticsController**: 분석 관련 요청 처리
-
-### Service (서비스)
-- 비즈니스 로직 분리
-- 데이터베이스 작업 추상화
-- 재사용 가능한 기능 모듈화
-
-## 설치 및 실행
-
-### 필수 요구사항
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
-- MongoDB
-
-### pnpm 설치 (필요한 경우)
 ```bash
-# npm을 통한 설치
-npm install -g pnpm
-
-# 또는 curl을 통한 설치
-curl -fsSL https://get.pnpm.io/install.sh | sh -
-```
-
-### 프로젝트 설정
-```bash
-# backend 폴더로 이동
-cd backendSpotLine
-
-# 의존성 설치
 pnpm install
+```
 
-# 환경 변수 설정
-cp .env.example .env
+### 2. 환경 변수 설정
 
-# MongoDB 실행 (로컬)
-mongod
+`.env.example`을 참고하여 `.env` 파일을 생성하고 설정:
 
-# 개발 서버 실행
-pnpm dev
+```env
+PORT=4000
+MONGODB_URI=your-mongodb-connection-string
+NODE_ENV=development
+JWT_SECRET=your-jwt-secret
+```
 
-# 프로덕션 실행
+### 3. TypeScript 빌드
+
+```bash
+pnpm run build
+```
+
+### 4. 서버 실행
+
+#### 개발 모드 (TypeScript 직접 실행)
+
+```bash
+pnpm run dev
+```
+
+#### 프로덕션 모드 (빌드된 JavaScript 실행)
+
+```bash
 pnpm start
 ```
 
-### pnpm 명령어
+#### 개발 모드 (파일 변경 감지)
+
 ```bash
-# 의존성 설치
-pnpm install
-
-# 개발 의존성 추가
-pnpm add -D <package>
-
-# 프로덕션 의존성 추가
-pnpm add <package>
-
-# 패키지 제거
-pnpm remove <package>
-
-# 캐시 정리
-pnpm store prune
-
-# 프로젝트 재설치
-pnpm reinstall
+pnpm run dev:watch
 ```
 
-## 환경 변수
+## 🔧 주요 스크립트
+
+- `pnpm run build` - TypeScript 컴파일
+- `pnpm start` - 프로덕션 서버 실행
+- `pnpm run dev` - 개발 서버 실행
+- `pnpm run dev:watch` - 파일 변경 감지 개발 서버
+- `pnpm run test:db` - 데이터베이스 연결 테스트
+- `pnpm run type-check` - TypeScript 타입 검사
+
+## 📁 프로젝트 구조
 
 ```
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/spotline
-NODE_ENV=development
+src/
+├── config/          # 설정 파일 (Swagger 등)
+├── controllers/     # 컨트롤러 (비즈니스 로직)
+├── middleware/      # 미들웨어 (인증, 에러 처리)
+├── models/          # MongoDB 모델 (Mongoose)
+├── routes/          # API 라우트
+├── services/        # 서비스 레이어
+├── types/           # TypeScript 타입 정의
+├── utils/           # 유틸리티 함수
+└── server.ts        # 메인 서버 파일
+
+dist/                # 빌드된 JavaScript 파일
 ```
 
-## 주요 API 엔드포인트
+## 🌐 API 엔드포인트
 
-### 매장 관리
+### 기본 정보
+
+- **Base URL**: `http://localhost:4000`
+- **API 문서**: `http://localhost:4000/api-docs`
+- **Health Check**: `http://localhost:4000/health`
+
+### 주요 엔드포인트
+
 - `GET /api/stores` - 매장 목록 조회
-- `GET /api/stores/qr/:qrId` - QR 코드로 매장 조회
-- `POST /api/stores` - 새 매장 등록
-- `PUT /api/stores/:id` - 매장 정보 수정
+- `GET /api/recommendations` - 추천 목록 조회
+- `GET /api/analytics` - 분석 데이터 조회
+- `POST /api/admin/login` - 관리자 로그인
+- `GET /api/geocoding/naver` - 네이버 지오코딩
 
-### 추천 시스템 (핵심 기능)
-- `GET /api/recommendations/qr/:qrId` - QR 기반 추천 조회
-- `POST /api/recommendations` - 추천 관계 생성
+## 🔐 인증
 
-### 분석 및 통계
-- `POST /api/analytics/event` - 이벤트 로깅
-- `GET /api/analytics/qr/:qrId` - QR별 통계
-- `GET /api/analytics/recommendations/performance` - 추천 성과 분석
+JWT 토큰 기반 인증을 사용합니다.
 
-## 핵심 기능
+```bash
+# 로그인 후 받은 토큰을 헤더에 포함
+Authorization: Bearer <your-jwt-token>
+```
 
-1. **QR 스캔 → 추천 조회**: 매장의 QR 코드 스캔 시 다음 장소 추천
-2. **실시간 분석**: 사용자 행동 추적 및 성과 측정
-3. **위치 기반 검색**: 근처 매장 및 추천 장소 검색
-4. **데이터 검증**: 입력 데이터 유효성 검사
-5. **에러 처리**: 체계적인 에러 핸들링 및 응답
+## 🗄️ 데이터베이스
 
-## 기술 스택
+MongoDB를 사용하며, Mongoose ODM으로 스키마를 관리합니다.
 
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB, Mongoose
-- **Package Manager**: pnpm
-- **Architecture**: MVC Pattern
-- **Validation**: Custom middleware
-- **Error Handling**: Centralized error handling
+### 주요 컬렉션
 
-## API 테스트
+- `stores` - 매장 정보
+- `recommendations` - 추천 데이터
+- `analytics` - 분석 데이터
+- `admins` - 관리자 계정
 
-서버 실행 후 다음 URL에서 API 정보 확인:
-- Health Check: `http://localhost:3000/health`
-- API 정보: `http://localhost:3000/api`
+## 🔧 개발 환경 설정
 
-## pnpm 장점
+### TypeScript 설정
 
-- **빠른 설치**: 심볼릭 링크를 사용한 효율적인 의존성 관리
-- **디스크 절약**: 글로벌 스토어를 통한 중복 제거
-- **엄격한 의존성**: phantom dependencies 방지
-- **모노레포 지원**: workspace 기능으로 멀티 패키지 관리 최적화
+- 타겟: ES2020
+- 모듈: CommonJS
+- Strict 모드 활성화
+- 경로 별칭: `@/*` → `src/*`
+
+### 코드 품질
+
+- TypeScript strict 모드
+- 타입 검사: `pnpm run type-check`
+
+## 🚀 배포
+
+### 빌드 및 실행
+
+```bash
+# 1. 빌드
+pnpm run build
+
+# 2. 프로덕션 실행
+pnpm start
+```
+
+### 환경 변수 (프로덕션)
+
+```env
+NODE_ENV=production
+PORT=4000
+MONGODB_URI=your-production-mongodb-uri
+JWT_SECRET=your-secure-jwt-secret
+```
+
+## 📊 모니터링
+
+- Health Check: `GET /health`
+- API 상태: `GET /api`
+- 데이터베이스 연결 테스트: `pnpm run test:db`
+
+## 🔍 문제 해결
+
+### 일반적인 문제
+
+1. **모듈을 찾을 수 없음 오류**
+
+   ```bash
+   pnpm run build  # TypeScript 컴파일 확인
+   ```
+
+2. **MongoDB 연결 실패**
+
+   ```bash
+   pnpm run test:db  # 연결 테스트
+   ```
+
+3. **포트 충돌**
+   - `.env` 파일에서 `PORT` 변경
+
+### 로그 확인
+
+서버 실행 시 콘솔에서 다음 메시지 확인:
+
+- `MongoDB 연결 성공`
+- `Spotline 서버가 포트 4000에서 실행 중입니다 (TypeScript)`
+
+## 📝 라이선스
+
+MIT License
+
+---
+
+**Spotline v2.0.0-ts** - TypeScript로 완전히 재구성된 안정적인 백엔드 API

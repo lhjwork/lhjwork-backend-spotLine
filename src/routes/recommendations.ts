@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import * as recommendationController from "@/controllers/recommendationController";
+import * as recommendationController from "../controllers/recommendationController";
 
 const router: Router = express.Router();
 

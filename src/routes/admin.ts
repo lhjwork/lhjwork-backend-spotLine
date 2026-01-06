@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-import * as adminController from "@/controllers/adminController";
-import { authenticateAdmin } from "@/middleware/adminAuth";
+import * as adminController from "../controllers/adminController";
+import { authenticateAdmin } from "../middleware/adminAuth";
 
 const router: Router = express.Router();
 

@@ -1,5 +1,5 @@
-import Store from "@/models/Store";
-import { IStore, CreateStoreRequest } from "@/types";
+import Store from "../models/Store";
+import { IStore, CreateStoreRequest } from "../types";
 
 // UUID 임포트 (any 타입으로 처리)
 const { v4: uuidv4 } = require("uuid");

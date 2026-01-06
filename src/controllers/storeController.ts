@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import * as storeService from "@/services/storeService";
-import { formatResponse } from "@/utils/responseFormatter";
-import { StoreQueryParams, CreateStoreRequest } from "@/types";
-import { HTTP_STATUS } from "@/utils/constants";
+import * as storeService from "../services/storeService";
+import { formatResponse } from "../utils/responseFormatter";
+import { StoreQueryParams, CreateStoreRequest } from "../types";
+import { HTTP_STATUS } from "../utils/constants";
 
 // 모든 매장 조회
 export const getAllStores = async (req: Request<{}, {}, {}, StoreQueryParams>, res: Response): Promise<void> => {

@@ -1,9 +1,16 @@
-import express, { Express } from "express";
+import express, { Express, Request, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import { errorHandler, notFoundHandler } from "@/middleware/errorHandler";
-import { specs, swaggerUi } from "@/config/swagger";
 import dotenv from "dotenv";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { specs, swaggerUi } from "./config/swagger";
+
+// Routes import
+import storesRouter from "./routes/stores";
+import recommendationsRouter from "./routes/recommendations";
+import analyticsRouter from "./routes/analytics";
+import adminRouter from "./routes/admin";
+import geocodingRouter from "./routes/geocoding";
 
 dotenv.config();
 
@@ -22,12 +29,6 @@ mongoose
   .catch((err: Error) => console.error("MongoDB 연결 실패:", err));
 
 // Routes
-import storesRouter from "@/routes/stores";
-import recommendationsRouter from "@/routes/recommendations";
-import analyticsRouter from "@/routes/analytics";
-import adminRouter from "@/routes/admin";
-import geocodingRouter from "@/routes/geocoding";
-
 app.use("/api/stores", storesRouter);
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
@@ -45,7 +46,7 @@ app.use(
 );
 
 // 메인 페이지
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -178,7 +179,7 @@ app.get("/", (req, res) => {
 });
 
 // Health check
-app.get("/health", (req, res) => {
+app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "OK",
     message: "Spotline API is running (TypeScript)",
@@ -188,7 +189,7 @@ app.get("/health", (req, res) => {
 });
 
 // API 정보
-app.get("/api", (req, res) => {
+app.get("/api", (req: Request, res: Response) => {
   res.json({
     name: "Spotline API",
     version: "2.0.0-ts",

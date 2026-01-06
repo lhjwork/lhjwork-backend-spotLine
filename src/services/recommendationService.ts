@@ -1,6 +1,6 @@
-import Recommendation from "@/models/Recommendation";
-import Store from "@/models/Store";
-import { IRecommendation, CreateRecommendationRequest } from "@/types";
+import Recommendation from "../models/Recommendation";
+import Store from "../models/Store";
+import { IRecommendation, CreateRecommendationRequest } from "../types";
 
 interface RecommendationFilters {
   category?: string;

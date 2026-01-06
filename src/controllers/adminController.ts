@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import Admin from "@/models/Admin";
-import { formatResponse } from "@/utils/responseFormatter";
-import { AuthenticatedRequest, LoginRequest, CreateAdminRequest } from "@/types";
-import { HTTP_STATUS, JWT_CONFIG } from "@/utils/constants";
+import Admin from "../models/Admin";
+import { formatResponse } from "../utils/responseFormatter";
+import { AuthenticatedRequest, LoginRequest, CreateAdminRequest } from "../types";
+import { HTTP_STATUS, JWT_CONFIG } from "../utils/constants";
 
 // JWT 토큰 생성
 const generateToken = (adminId: string): string => {
