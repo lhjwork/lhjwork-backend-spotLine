@@ -21,9 +21,11 @@ mongoose
   .catch((err) => console.error("MongoDB 연결 실패:", err));
 
 // Routes
-app.use("/api/stores", require("./routes/stores"));
-app.use("/api/recommendations", require("./routes/recommendations"));
-app.use("/api/analytics", require("./routes/analytics"));
+app.use('/api/stores', require('./routes/stores'));
+app.use('/api/recommendations', require('./routes/recommendations'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/geocoding', require('./routes/geocoding'));
 
 // Swagger 문서
 app.use(
@@ -159,6 +161,7 @@ app.get("/", (req, res) => {
                 <div class="endpoint">GET /api/stores - 매장 목록</div>
                 <div class="endpoint">GET /api/recommendations - 추천 목록</div>
                 <div class="endpoint">GET /api/analytics - 분석 데이터</div>
+                <div class="endpoint">POST /api/admin/login - 관리자 로그인</div>
                 <div class="endpoint">GET /health - 서버 상태</div>
             </div>
         </div>
