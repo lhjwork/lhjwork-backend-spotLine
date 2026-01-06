@@ -13,10 +13,12 @@
     "reinstall": "pnpm run clean && pnpm install"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -27,7 +29,12 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "keywords": ["spotline", "qr", "local", "recommendation"],
+  "keywords": [
+    "spotline",
+    "qr",
+    "local",
+    "recommendation"
+  ],
   "author": "",
   "license": "MIT"
 }

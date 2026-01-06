@@ -1,26 +1,249 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const storeController = require('../controllers/storeController');
+const storeController = require("../controllers/storeController");
 
-// 모든 매장 조회
-router.get('/', storeController.getAllStores);
+/**
+ * @swagger
+ * tags:
+ *   name: Stores
+ *   description: 매장 관리 API
+ */
 
-// QR 코드로 매장 조회
-router.get('/qr/:qrId', storeController.getStoreByQR);
+/**
+ * @swagger
+ * /api/stores:
+ *   get:
+ *     summary: 모든 매장 조회
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [cafe, restaurant, exhibition, hotel, retail, culture, other]
+ *         description: 매장 카테고리 필터
+ *       - in: query
+ *         name: area
+ *         schema:
+ *           type: string
+ *         description: 상권 필터
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: 결과 개수 제한
+ *     responses:
+ *       200:
+ *         description: 매장 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Store'
+ *       500:
+ *         description: 서버 에러
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/", storeController.getAllStores);
 
-// 근처 매장 검색
-router.get('/nearby/:lat/:lng', storeController.getNearbyStores);
+/**
+ * @swagger
+ * /api/stores/qr/{qrId}:
+ *   get:
+ *     summary: QR 코드로 매장 조회
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: path
+ *         name: qrId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: QR 코드 ID
+ *     responses:
+ *       200:
+ *         description: 매장 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Store'
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/qr/:qrId", storeController.getStoreByQR);
 
-// 특정 매장 조회
-router.get('/:id', storeController.getStoreById);
+/**
+ * @swagger
+ * /api/stores/nearby/{lat}/{lng}:
+ *   get:
+ *     summary: 근처 매장 검색
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: path
+ *         name: lat
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: 위도
+ *       - in: path
+ *         name: lng
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: 경도
+ *       - in: query
+ *         name: radius
+ *         schema:
+ *           type: number
+ *           default: 1000
+ *         description: 검색 반경 (미터)
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: 카테고리 필터
+ *     responses:
+ *       200:
+ *         description: 근처 매장 목록
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Store'
+ */
+router.get("/nearby/:lat/:lng", storeController.getNearbyStores);
 
-// 새 매장 등록
-router.post('/', storeController.createStore);
+/**
+ * @swagger
+ * /api/stores/{id}:
+ *   get:
+ *     summary: 특정 매장 조회
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 매장 ID
+ *     responses:
+ *       200:
+ *         description: 매장 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Store'
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+router.get("/:id", storeController.getStoreById);
 
-// 매장 정보 수정
-router.put('/:id', storeController.updateStore);
+/**
+ * @swagger
+ * /api/stores:
+ *   post:
+ *     summary: 새 매장 등록
+ *     tags: [Stores]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - category
+ *               - location
+ *               - qrCode
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 매장명
+ *               category:
+ *                 type: string
+ *                 enum: [cafe, restaurant, exhibition, hotel, retail, culture, other]
+ *               location:
+ *                 type: object
+ *                 properties:
+ *                   address:
+ *                     type: string
+ *                   coordinates:
+ *                     type: object
+ *                     properties:
+ *                       coordinates:
+ *                         type: array
+ *                         items:
+ *                           type: number
+ *               qrCode:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *     responses:
+ *       201:
+ *         description: 매장 등록 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Store'
+ *       400:
+ *         description: 잘못된 요청
+ */
+router.post("/", storeController.createStore);
 
-// 매장 삭제 (비활성화)
-router.delete('/:id', storeController.deleteStore);
+/**
+ * @swagger
+ * /api/stores/{id}:
+ *   put:
+ *     summary: 매장 정보 수정
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Store'
+ *     responses:
+ *       200:
+ *         description: 매장 수정 성공
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+router.put("/:id", storeController.updateStore);
+
+/**
+ * @swagger
+ * /api/stores/{id}:
+ *   delete:
+ *     summary: 매장 삭제 (비활성화)
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 매장 삭제 성공
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+router.delete("/:id", storeController.deleteStore);
 
 module.exports = router;

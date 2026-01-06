@@ -1,23 +1,195 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const recommendationController = require('../controllers/recommendationController');
+const recommendationController = require("../controllers/recommendationController");
 
-// QR 코드 기반 추천 조회 (핵심 기능)
-router.get('/qr/:qrId', recommendationController.getRecommendationsByQR);
+/**
+ * @swagger
+ * tags:
+ *   name: Recommendations
+ *   description: 추천 관리 API
+ */
 
-// 매장별 추천 조회
-router.get('/store/:storeId', recommendationController.getRecommendationsByStore);
+/**
+ * @swagger
+ * /api/recommendations/qr/{qrId}:
+ *   get:
+ *     summary: QR 코드 기반 추천 조회 (핵심 기능)
+ *     tags: [Recommendations]
+ *     parameters:
+ *       - in: path
+ *         name: qrId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: QR 코드 ID
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [next_meal, dessert, activity, shopping, culture, rest]
+ *         description: 추천 카테고리 필터
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: 결과 개수 제한
+ *     responses:
+ *       200:
+ *         description: 추천 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recommendation'
+ *       404:
+ *         description: QR 코드를 찾을 수 없음
+ */
+router.get("/qr/:qrId", recommendationController.getRecommendationsByQR);
 
-// 카테고리별 추천 통계
-router.get('/stats/categories', recommendationController.getCategoryStats);
+/**
+ * @swagger
+ * /api/recommendations/store/{storeId}:
+ *   get:
+ *     summary: 매장별 추천 조회
+ *     tags: [Recommendations]
+ *     parameters:
+ *       - in: path
+ *         name: storeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 매장 ID
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: 카테고리 필터
+ *     responses:
+ *       200:
+ *         description: 매장 추천 목록
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recommendation'
+ */
+router.get("/store/:storeId", recommendationController.getRecommendationsByStore);
 
-// 새 추천 관계 생성
-router.post('/', recommendationController.createRecommendation);
+/**
+ * @swagger
+ * /api/recommendations/stats/categories:
+ *   get:
+ *     summary: 카테고리별 추천 통계
+ *     tags: [Recommendations]
+ *     responses:
+ *       200:
+ *         description: 카테고리별 통계 데이터
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                       count:
+ *                         type: number
+ */
+router.get("/stats/categories", recommendationController.getCategoryStats);
 
-// 추천 관계 수정
-router.put('/:id', recommendationController.updateRecommendation);
+/**
+ * @swagger
+ * /api/recommendations:
+ *   post:
+ *     summary: 새 추천 관계 생성
+ *     tags: [Recommendations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fromStore
+ *               - toStore
+ *               - category
+ *             properties:
+ *               fromStore:
+ *                 type: string
+ *                 description: 출발 매장 ID
+ *               toStore:
+ *                 type: string
+ *                 description: 추천 대상 매장 ID
+ *               category:
+ *                 type: string
+ *                 enum: [next_meal, dessert, activity, shopping, culture, rest]
+ *               priority:
+ *                 type: number
+ *                 minimum: 1
+ *                 maximum: 10
+ *               description:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 추천 관계 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Recommendation'
+ */
+router.post("/", recommendationController.createRecommendation);
 
-// 추천 관계 삭제
-router.delete('/:id', recommendationController.deleteRecommendation);
+/**
+ * @swagger
+ * /api/recommendations/{id}:
+ *   put:
+ *     summary: 추천 관계 수정
+ *     tags: [Recommendations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Recommendation'
+ *     responses:
+ *       200:
+ *         description: 추천 관계 수정 성공
+ *       404:
+ *         description: 추천 관계를 찾을 수 없음
+ */
+router.put("/:id", recommendationController.updateRecommendation);
+
+/**
+ * @swagger
+ * /api/recommendations/{id}:
+ *   delete:
+ *     summary: 추천 관계 삭제
+ *     tags: [Recommendations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 추천 관계 삭제 성공
+ *       404:
+ *         description: 추천 관계를 찾을 수 없음
+ */
+router.delete("/:id", recommendationController.deleteRecommendation);
 
 module.exports = router;
