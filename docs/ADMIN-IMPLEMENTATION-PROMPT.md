@@ -1,362 +1,391 @@
-# Spotline Admin 시스템 구현 프롬프트
+# 🎯 Spotline Admin Frontend 구현 프롬프트
 
-## 시스템 개요
+## 📋 프로젝트 요구사항
 
-Spotline은 QR 기반 로컬 연결 서비스로, 매장에서 QR 코드를 스캔하면 다음에 갈 만한 장소를 추천해주는 서비스입니다. 이 어드민 시스템은 매장 관리, 추천 관계 설정, 분석 데이터 확인 등의 기능을 제공합니다.
+**Spotline 관리자 페이지**를 React + Vite + TypeScript로 구현해주세요.
 
-## 🎯 핵심 기능 요구사항
+### 기본 정보
+- **API 서버**: `http://localhost:4000`
+- **관리자 계정**: `spotline-admin` / `12341234`
+- **포트**: `3002`
+- **기술 스택**: React, Vite, TypeScript, Ant Design, React Query, React Router
 
-### 1. 매장 관리
-- **매장 등록**: Daum 주소 API를 사용한 정확한 주소 입력 및 좌표 자동 변환
-- **매장 수정**: 기존 매장 정보 수정
-- **매장 상태 관리**: 활성화/비활성화 토글
-- **매장 삭제**: 완전 삭제 (관련 데이터 모두 삭제)
-- **검색 및 필터링**: 매장명, 주소, 카테고리, 상태별 필터링
-- **페이지네이션**: 대량 데이터 효율적 처리
+---
 
-### 2. 추천 관계 관리
-- **추천 관계 생성**: 매장 간 추천 관계 설정
-- **우선순위 설정**: 추천 순서 조정
-- **카테고리 분류**: 추천 유형별 분류
-- **추천 성과 추적**: 클릭률 및 전환율 모니터링
+## 🎨 UI/UX 요구사항
 
-### 3. 분석 대시보드
-- **실시간 통계**: QR 스캔 수, 추천 클릭률 등
-- **시각화**: 차트와 그래프를 통한 데이터 시각화
-- **성과 분석**: 매장별, 기간별 성과 분석
-- **인기 매장 순위**: 스캔 수 기반 인기 매장 랭킹
+### 전체 디자인
+- **모던하고 깔끔한 관리자 대시보드** 스타일
+- **반응형 디자인** (데스크톱 우선, 태블릿 지원)
+- **Ant Design** 컴포넌트 라이브러리 사용
+- **사이드바 네비게이션** + **상단 헤더** 레이아웃
 
-### 4. 권한 관리
-- **역할 기반 접근 제어**: super_admin, admin, moderator
-- **세분화된 권한**: 기능별 읽기/쓰기/삭제 권한
-- **JWT 인증**: 보안 토큰 기반 인증
+### 색상 테마
+- **Primary**: #1890ff (파란색)
+- **Success**: #52c41a (초록색)  
+- **Warning**: #faad14 (주황색)
+- **Error**: #f5222d (빨간색)
+- **Background**: #f0f2f5 (연한 회색)
 
-## 🏗️ 기술 스택
+---
 
-### Backend
-- **Framework**: Node.js + Express.js
-- **Database**: MongoDB + Mongoose
-- **Authentication**: JWT + bcryptjs
-- **Validation**: Custom middleware
-- **Architecture**: MVC Pattern
+## 📱 페이지 구성
 
-### Frontend
-- **Framework**: React 18 + Vite
-- **Routing**: React Router DOM
-- **State Management**: React Query
-- **Forms**: React Hook Form
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Icons**: Lucide React
-
-### External APIs
-- **Daum 주소 검색**: 주소 검색 팝업
-- **Kakao 좌표 변환**: 주소 → 좌표 변환
-
-## 📁 프로젝트 구조
-
+### 1. 로그인 페이지 (`/login`)
 ```
-backend-spotLine/
-├── controllers/          # API 컨트롤러
-│   ├── adminController.js
-│   ├── storeController.js
-│   └── analyticsController.js
-├── services/            # 비즈니스 로직
-│   ├── adminService.js
-│   └── storeService.js
-├── models/              # 데이터 모델
-│   ├── Admin.js
-│   ├── Store.js
-│   ├── Recommendation.js
-│   └── Analytics.js
-├── routes/              # API 라우트
-│   └── admin.js
-├── middleware/          # 미들웨어
-│   ├── adminAuth.js
-│   └── errorHandler.js
-├── scripts/             # 유틸리티 스크립트
-│   └── createSpotlineAdmin.js
-└── admin-frontend/      # 프론트엔드
-    ├── src/
-    │   ├── components/
-    │   │   ├── Layout.jsx
-    │   │   ├── AddressSearch.jsx
-    │   │   └── StoreFormModal.jsx
-    │   ├── pages/
-    │   │   ├── Dashboard.jsx
-    │   │   ├── Stores.jsx
-    │   │   ├── Recommendations.jsx
-    │   │   ├── Analytics.jsx
-    │   │   └── Admins.jsx
-    │   ├── services/
-    │   │   └── api.js
-    │   └── contexts/
-    │       └── AuthContext.jsx
-    └── index.html
+┌─────────────────────────────────┐
+│        Spotline Admin           │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │     로그인 폼           │    │
+│  │  [사용자명 입력]        │    │
+│  │  [비밀번호 입력]        │    │
+│  │  [로그인 버튼]          │    │
+│  └─────────────────────────┘    │
+└─────────────────────────────────┘
 ```
 
-## 🔧 구현 가이드
+**기능**:
+- 사용자명/비밀번호 입력
+- 로그인 버튼 클릭 시 API 호출
+- 성공 시 토큰 저장 후 대시보드로 이동
+- 실패 시 에러 메시지 표시
 
-### 1. 환경 설정
-
-```bash
-# 백엔드 의존성
-pnpm add express mongoose cors dotenv uuid bcryptjs jsonwebtoken
-
-# 프론트엔드 의존성
-npm add react react-dom react-router-dom axios recharts lucide-react react-hook-form react-query date-fns clsx tailwindcss
+### 2. 대시보드 (`/`)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Header: [로고] [사용자 정보] [로그아웃]                  │
+├─────────────────────────────────────────────────────────┤
+│ Sidebar │ Main Content                                  │
+│ - 대시보드│ ┌─────────┐ ┌─────────┐ ┌─────────┐        │
+│ - 매장관리│ │전체매장 │ │전체추천 │ │최근활동 │        │
+│ - 추천관리│ │   150   │ │   320   │ │  QR스캔 │        │
+│ - 분석    │ └─────────┘ └─────────┘ └─────────┘        │
+│          │                                            │
+│          │ 최근 활동 목록                              │
+│          │ ┌─────────────────────────────────────┐    │
+│          │ │ QR 스캔 | 카페 스팟라인 | 2분 전    │    │
+│          │ │ 추천 클릭 | 디저트 하우스 | 5분 전  │    │
+│          │ └─────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### 2. 환경 변수
+**기능**:
+- 전체 통계 카드 (매장 수, 추천 수, 활성/비활성)
+- 최근 활동 목록 (QR 스캔, 추천 클릭 등)
+- 실시간 데이터 업데이트
 
-```env
-# 백엔드 (.env)
-PORT=4000
-MONGODB_URI=mongodb://localhost:27017/spotline
-NODE_ENV=development
-JWT_SECRET=your-super-secret-jwt-key
-
-# 프론트엔드 (admin-frontend/.env)
-VITE_API_URL=http://localhost:4000
-VITE_KAKAO_REST_API_KEY=your-kakao-api-key
+### 3. 매장 관리 (`/stores`)
+```
+┌─────────────────────────────────────────────────────────┐
+│ 매장 관리                                [+ 새 매장 추가] │
+├─────────────────────────────────────────────────────────┤
+│ [검색] [카테고리▼] [상태▼] [검색버튼]                    │
+├─────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 카페 스팟라인 | 카페 | 서울시 강남구 테헤란로 123   │ │
+│ │ 활성 상태 | [상세] [수정] [삭제]                   │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 디저트 하우스 | 음식점 | 서울시 강남구 테헤란로 456 │ │
+│ │ 활성 상태 | [상세] [수정] [삭제]                   │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ [이전] 1 / 5 [다음]                                     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### 3. 데이터 모델 설계
+**기능**:
+- 매장 목록 조회 (페이지네이션)
+- 검색 (매장명, 주소)
+- 필터링 (카테고리, 상태)
+- 매장 상세보기/수정/삭제
+- 새 매장 추가
 
-#### Store 모델
-```javascript
-{
-  name: String,                    // 매장명
-  category: String,               // 카테고리 (cafe, restaurant, etc.)
-  location: {
-    address: String,              // 주소
-    coordinates: {                // GeoJSON 좌표
-      type: 'Point',
-      coordinates: [lng, lat]
-    },
-    area: String,                 // 상권 (홍대, 강남 등)
-    district: String              // 구/동
-  },
-  contact: {
-    phone: String,
-    website: String,
-    instagram: String
-  },
-  businessHours: Object,          // 영업시간
-  description: String,            // 설명
-  tags: [String],                // 태그
-  images: [String],              // 이미지 URL
-  qrCode: {
-    id: String,                   // UUID
-    isActive: Boolean
-  },
-  isActive: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
+### 4. 매장 생성/수정 (`/stores/new`, `/stores/:id/edit`)
+```
+┌─────────────────────────────────────────────────────────┐
+│ 매장 추가                                               │
+├─────────────────────────────────────────────────────────┤
+│ 매장명 *     [                    ]                     │
+│ 카테고리 *   [카페 ▼]                                   │
+│ 주소 *       [                    ] [주소검색]          │
+│ 좌표 *       위도[     ] 경도[     ]                     │
+│ 전화번호     [                    ]                     │
+│ 설명         [                    ]                     │
+│              [                    ]                     │
+│ 운영시간                                                │
+│ 월요일       [09:00] ~ [22:00]                          │
+│ 화요일       [09:00] ~ [22:00]                          │
+│ ...                                                     │
+│                                                         │
+│ [취소] [저장]                                           │
+└─────────────────────────────────────────────────────────┘
 ```
 
-#### Recommendation 모델
-```javascript
-{
-  fromStore: ObjectId,            // 출발 매장
-  toStore: ObjectId,              // 추천 매장
-  category: String,               // 추천 카테고리
-  priority: Number,               // 우선순위 (1-10)
-  distance: Number,               // 거리 (미터)
-  walkingTime: Number,            // 도보 시간 (분)
-  description: String,            // 추천 이유
-  tags: [String],                // 태그
-  isActive: Boolean,
-  createdAt: Date
-}
+**기능**:
+- 매장 정보 입력 폼
+- 주소 검색 (Daum 주소 API 연동)
+- 좌표 자동 변환
+- 운영시간 설정
+- 유효성 검사
+
+### 5. 추천 관리 (`/recommendations`)
+```
+┌─────────────────────────────────────────────────────────┐
+│ 추천 관리                                [+ 새 추천 추가] │
+├─────────────────────────────────────────────────────────┤
+│ [출발매장▼] [도착매장▼] [검색버튼]                       │
+├─────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 카페 스팟라인 → 디저트 하우스                       │ │
+│ │ 디저트 | 우선순위: 8 | 활성                         │ │
+│ │ "커피 후 달콤한 디저트는 어떠세요?"                  │ │
+│ │ [상세] [수정] [삭제]                               │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 카페 스팟라인 → 아트 갤러리 카페                    │ │
+│ │ 문화 | 우선순위: 7 | 활성                           │ │
+│ │ "예술 작품을 감상하며 여유로운 시간을 보내세요"      │ │
+│ │ [상세] [수정] [삭제]                               │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ [이전] 1 / 3 [다음]                                     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### 4. API 설계 원칙
+**기능**:
+- 추천 목록 조회 (페이지네이션)
+- 출발/도착 매장별 필터링
+- 추천 상세보기/수정/삭제
+- 새 추천 추가
 
-#### RESTful API 구조
+### 6. 추천 생성/수정 (`/recommendations/new`, `/recommendations/:id/edit`)
 ```
-GET    /api/admin/stores           # 매장 목록
-POST   /api/admin/stores           # 매장 생성
-GET    /api/admin/stores/:id       # 매장 상세
-PUT    /api/admin/stores/:id       # 매장 수정
-DELETE /api/admin/stores/:id       # 매장 삭제
-PATCH  /api/admin/stores/:id/status # 상태 변경
-```
-
-#### 응답 형식 표준화
-```javascript
-// 성공 응답
-{
-  data: {...},
-  pagination: {...}  // 목록 API의 경우
-}
-
-// 에러 응답
-{
-  error: "에러 메시지"
-}
+┌─────────────────────────────────────────────────────────┐
+│ 추천 추가                                               │
+├─────────────────────────────────────────────────────────┤
+│ 출발 매장 *   [카페 스팟라인 ▼]                         │
+│ 도착 매장 *   [디저트 하우스 ▼]                         │
+│ 카테고리 *    [디저트 ▼]                                │
+│ 우선순위      [8] (1-10)                                │
+│ 설명          [                    ]                     │
+│               [                    ]                     │
+│ 태그          [디저트] [가까운] [추천] [+ 태그 추가]      │
+│                                                         │
+│ [취소] [저장]                                           │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### 5. 프론트엔드 컴포넌트 설계
+**기능**:
+- 추천 정보 입력 폼
+- 매장 선택 (드롭다운)
+- 카테고리 선택
+- 우선순위 설정
+- 태그 관리
 
-#### 페이지 구조
-- **Layout**: 공통 레이아웃 (사이드바, 헤더)
-- **Dashboard**: 대시보드 (통계, 차트)
-- **Stores**: 매장 관리 (목록, 생성, 수정)
-- **Recommendations**: 추천 관리
-- **Analytics**: 분석 페이지
-- **Admins**: 어드민 관리
+---
 
-#### 공통 컴포넌트
-- **AddressSearch**: Daum 주소 검색
-- **StoreFormModal**: 매장 생성/수정 모달
-- **DataTable**: 데이터 테이블
-- **Chart**: 차트 컴포넌트
+## 🔧 기술적 요구사항
 
-### 6. 주소 검색 구현
+### 1. 프로젝트 구조
+```
+src/
+├── components/           # 재사용 컴포넌트
+│   ├── Layout/          # 레이아웃 컴포넌트
+│   ├── Auth/            # 인증 관련
+│   ├── Store/           # 매장 관련
+│   ├── Recommendation/  # 추천 관련
+│   └── Common/          # 공통 컴포넌트
+├── pages/               # 페이지 컴포넌트
+├── api/                 # API 호출 함수
+├── hooks/               # 커스텀 훅
+├── utils/               # 유틸리티 함수
+├── types/               # TypeScript 타입
+└── styles/              # 스타일 파일
+```
 
-#### Daum 주소 API 연동
-```javascript
-new window.daum.Postcode({
-  oncomplete: async function(data) {
-    const address = data.roadAddress || data.jibunAddress
-    const coordinates = await getCoordinatesFromAddress(address)
-    
-    onAddressSelect({
-      address,
-      coordinates,
-      addressData: data
-    })
+### 2. 상태 관리
+- **React Query**: 서버 상태 관리
+- **Zustand**: 클라이언트 상태 관리
+- **localStorage**: 토큰 저장
+
+### 3. API 연동
+```typescript
+// api/client.ts
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: 'http://localhost:4000',
+  timeout: 10000,
+});
+
+// 요청 인터셉터
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-}).open()
-```
+  return config;
+});
 
-#### Kakao 좌표 변환
-```javascript
-const getCoordinatesFromAddress = async (address) => {
-  const response = await fetch(
-    `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`,
-    {
-      headers: {
-        'Authorization': `KakaoAK ${KAKAO_API_KEY}`
-      }
+// 응답 인터셉터
+apiClient.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/login';
     }
-  )
-  
-  const data = await response.json()
-  if (data.documents?.length > 0) {
-    const { x: lng, y: lat } = data.documents[0]
-    return { lat: parseFloat(lat), lng: parseFloat(lng) }
+    return Promise.reject(error);
   }
-  return null
+);
+```
+
+### 4. 라우팅
+```typescript
+// App.tsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/stores" element={<ProtectedRoute><StoreListPage /></ProtectedRoute>} />
+        <Route path="/stores/new" element={<ProtectedRoute><StoreFormPage /></ProtectedRoute>} />
+        <Route path="/stores/:id/edit" element={<ProtectedRoute><StoreFormPage /></ProtectedRoute>} />
+        <Route path="/recommendations" element={<ProtectedRoute><RecommendationListPage /></ProtectedRoute>} />
+        <Route path="/recommendations/new" element={<ProtectedRoute><RecommendationFormPage /></ProtectedRoute>} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 ```
 
-## 🔐 보안 고려사항
+---
 
-### 1. 인증 및 권한
-- JWT 토큰 기반 인증
-- 역할 기반 접근 제어 (RBAC)
-- API 엔드포인트별 권한 검증
+## 📊 API 엔드포인트
 
-### 2. 데이터 검증
-- 입력 데이터 유효성 검사
-- SQL Injection 방지
-- XSS 공격 방지
+### 인증
+- `POST /api/admin/login` - 로그인
+- `GET /api/admin/profile` - 프로필 조회
+- `GET /api/admin/verify` - 토큰 검증
 
-### 3. API 보안
-- CORS 설정
-- Rate Limiting
-- API 키 보안 관리
+### 매장 관리
+- `GET /api/admin/stores` - 매장 목록 조회
+- `GET /api/admin/stores/:id` - 매장 상세 조회
+- `POST /api/admin/stores` - 매장 생성
+- `PUT /api/admin/stores/:id` - 매장 수정
+- `DELETE /api/admin/stores/:id` - 매장 삭제
 
-## 📊 성능 최적화
+### 추천 관리
+- `GET /api/admin/recommendations` - 추천 목록 조회
+- `GET /api/admin/recommendations/:id` - 추천 상세 조회
+- `POST /api/admin/recommendations` - 추천 생성
+- `PUT /api/admin/recommendations/:id` - 추천 수정
+- `DELETE /api/admin/recommendations/:id` - 추천 삭제
 
-### 1. 데이터베이스
-- 적절한 인덱스 설정
-- 집계 쿼리 최적화
-- 페이지네이션 구현
+### 분석
+- `GET /api/admin/analytics/dashboard` - 대시보드 통계
+- `GET /api/admin/analytics/stores` - 매장별 통계
 
-### 2. 프론트엔드
-- React Query를 통한 캐싱
-- 컴포넌트 지연 로딩
-- 이미지 최적화
+---
 
-### 3. API
-- 응답 데이터 최소화
-- 압축 설정
-- 캐시 헤더 설정
+## 🎯 구현 우선순위
 
-## 🧪 테스트 전략
+### Phase 1 (필수)
+1. ✅ 프로젝트 설정 (Vite + React + TypeScript)
+2. ✅ 로그인 페이지 및 인증 시스템
+3. ✅ 레이아웃 컴포넌트 (사이드바, 헤더)
+4. ✅ 대시보드 페이지
+5. ✅ 매장 목록 페이지
+6. ✅ 매장 생성/수정 페이지
 
-### 1. 백엔드 테스트
-- API 엔드포인트 테스트
-- 데이터베이스 연동 테스트
-- 권한 검증 테스트
+### Phase 2 (중요)
+7. ✅ 추천 목록 페이지
+8. ✅ 추천 생성/수정 페이지
+9. ✅ 검색 및 필터링 기능
+10. ✅ 페이지네이션
 
-### 2. 프론트엔드 테스트
-- 컴포넌트 단위 테스트
-- 사용자 시나리오 테스트
-- API 연동 테스트
+### Phase 3 (선택)
+11. 🔄 이미지 업로드 기능
+12. 🔄 지도 연동
+13. 🔄 차트 및 그래프
+14. 🔄 엑셀 내보내기
 
-## 🚀 배포 가이드
+---
 
-### 1. 개발 환경
+## 🔍 테스트 시나리오
+
+### 1. 로그인 테스트
+- [ ] 올바른 계정으로 로그인 성공
+- [ ] 잘못된 계정으로 로그인 실패
+- [ ] 토큰 만료 시 자동 로그아웃
+
+### 2. 매장 관리 테스트
+- [ ] 매장 목록 조회
+- [ ] 매장 검색 기능
+- [ ] 매장 생성/수정/삭제
+- [ ] 페이지네이션 동작
+
+### 3. 추천 관리 테스트
+- [ ] 추천 목록 조회
+- [ ] 추천 필터링
+- [ ] 추천 생성/수정/삭제
+
+### 4. 대시보드 테스트
+- [ ] 통계 데이터 표시
+- [ ] 최근 활동 목록
+
+---
+
+## 🚀 시작하기
+
+### 1. 프로젝트 생성
 ```bash
-# 백엔드
-pnpm dev
+npm create vite@latest spotline-admin -- --template react-ts
+cd spotline-admin
+npm install
+```
 
-# 프론트엔드
-cd admin-frontend
+### 2. 필요한 패키지 설치
+```bash
+npm install antd axios react-router-dom @tanstack/react-query zustand
+npm install @types/node
+```
+
+### 3. 개발 서버 실행
+```bash
 npm run dev
 ```
 
-### 2. 프로덕션 배포
-```bash
-# 백엔드
-pnpm start
+### 4. 테스트 계정
+- **사용자명**: `spotline-admin`
+- **비밀번호**: `12341234`
 
-# 프론트엔드
-npm run build
-```
+---
 
-## 📝 개발 체크리스트
+## 📝 추가 요구사항
 
-### 백엔드
-- [ ] MongoDB 연결 설정
-- [ ] JWT 인증 미들웨어 구현
-- [ ] 매장 CRUD API 구현
-- [ ] 추천 관계 API 구현
-- [ ] 분석 API 구현
-- [ ] 권한 검증 미들웨어
-- [ ] 에러 핸들링
-- [ ] API 문서 작성
+### 사용자 경험
+- **로딩 상태** 표시 (스피너, 스켈레톤)
+- **에러 처리** (토스트 메시지, 에러 바운더리)
+- **확인 다이얼로그** (삭제 시)
+- **성공 메시지** (생성/수정/삭제 후)
 
-### 프론트엔드
-- [ ] React 프로젝트 설정
-- [ ] 라우팅 구성
-- [ ] 인증 컨텍스트 구현
-- [ ] 레이아웃 컴포넌트
-- [ ] 매장 관리 페이지
-- [ ] 주소 검색 컴포넌트
-- [ ] 추천 관리 페이지
-- [ ] 대시보드 구현
-- [ ] 차트 컴포넌트
-- [ ] 반응형 디자인
+### 성능 최적화
+- **React.memo** 사용
+- **useMemo, useCallback** 적절히 사용
+- **코드 스플리팅** (React.lazy)
+- **이미지 최적화**
 
-### 통합
-- [ ] API 연동 테스트
-- [ ] 권한 시스템 테스트
-- [ ] 주소 검색 기능 테스트
-- [ ] 데이터 시각화 테스트
-- [ ] 전체 시나리오 테스트
+### 접근성
+- **키보드 네비게이션** 지원
+- **스크린 리더** 지원
+- **적절한 ARIA 라벨**
 
-## 🎯 성공 지표
+---
 
-1. **기능 완성도**: 모든 CRUD 기능 정상 작동
-2. **사용성**: 직관적인 UI/UX
-3. **성능**: 빠른 응답 시간 (< 2초)
-4. **안정성**: 에러 없는 안정적 운영
-5. **확장성**: 새로운 기능 추가 용이성
-
-이 프롬프트를 기반으로 Spotline 어드민 시스템을 구현하면, 매장 관리자와 서비스 운영자가 효율적으로 서비스를 관리할 수 있는 완성도 높은 시스템을 구축할 수 있습니다.
+이 프롬프트를 따라 구현하면 완전한 Spotline 관리자 페이지를 개발할 수 있습니다. 각 단계별로 구현하면서 API 연동을 테스트하고, 사용자 경험을 개선해 나가세요!

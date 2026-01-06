@@ -10,7 +10,7 @@
 - Kakao Developers 계정
 
 ### 2. 프로젝트 클론 및 설정
-
+git
 ```bash
 # 프로젝트 클론
 git clone <repository-url>
