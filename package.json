@@ -14,7 +14,8 @@
     "clean": "rimraf dist node_modules",
     "prebuild": "rimraf dist",
     "render:build": "pnpm install --no-frozen-lockfile && pnpm run build",
-    "render:start": "node dist/server.js"
+    "render:start": "node dist/server.js",
+    "render:debug": "ls -la && ls -la dist && node dist/server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
