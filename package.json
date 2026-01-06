@@ -12,7 +12,9 @@
     "test:db": "ts-node -r tsconfig-paths/register src/scripts/testConnection.ts",
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist node_modules",
-    "prebuild": "rimraf dist"
+    "prebuild": "rimraf dist",
+    "render:build": "pnpm install --no-frozen-lockfile && pnpm run build",
+    "render:start": "node dist/server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
