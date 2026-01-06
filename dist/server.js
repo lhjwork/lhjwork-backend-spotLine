@@ -23,11 +23,12 @@ const stores_1 = __importDefault(require("@/routes/stores"));
 const recommendations_1 = __importDefault(require("@/routes/recommendations"));
 const analytics_1 = __importDefault(require("@/routes/analytics"));
 const admin_1 = __importDefault(require("@/routes/admin"));
+const geocoding_1 = __importDefault(require("@/routes/geocoding"));
 app.use("/api/stores", stores_1.default);
 app.use("/api/recommendations", recommendations_1.default);
 app.use("/api/analytics", analytics_1.default);
 app.use("/api/admin", admin_1.default);
-app.use("/api/geocoding", require("./routes/geocoding"));
+app.use("/api/geocoding", geocoding_1.default);
 app.use("/api-docs", swagger_1.swaggerUi.serve, swagger_1.swaggerUi.setup(swagger_1.specs, {
     customCss: ".swagger-ui .topbar { display: none }",
     customSiteTitle: "Spotline API Documentation",
