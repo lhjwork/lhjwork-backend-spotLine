@@ -12,6 +12,62 @@ const router: Router = express.Router();
 
 /**
  * @swagger
+ * /api/experience:
+ *   get:
+ *     summary: SpotLine 체험 매장 선택 (간편 접근)
+ *     tags: [Experience]
+ *     description: 관리자가 설정한 체험 설정에 따라 매장을 선택하고 리다이렉트 정보를 반환
+ *     parameters:
+ *       - in: header
+ *         name: x-session-id
+ *         schema:
+ *           type: string
+ *         description: 세션 ID (분석용)
+ *     responses:
+ *       200:
+ *         description: 체험 매장 선택 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         qrId:
+ *                           type: string
+ *                           description: 선택된 매장의 QR 코드 ID
+ *                         storeName:
+ *                           type: string
+ *                           description: 매장명
+ *                         storeId:
+ *                           type: string
+ *                           description: 매장 MongoDB ID
+ *                         area:
+ *                           type: string
+ *                           description: 지역
+ *                         configUsed:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: string
+ *                             name:
+ *                               type: string
+ *                             type:
+ *                               type: string
+ *                         redirectUrl:
+ *                           type: string
+ *                           description: 리다이렉트할 URL
+ *                         timestamp:
+ *                           type: string
+ *                           format: date-time
+ */
+router.get("/", experienceController.getExperienceStore);
+
+/**
+ * @swagger
  * /api/experience/select:
  *   get:
  *     summary: SpotLine 체험 매장 선택
