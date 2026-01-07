@@ -12,19 +12,23 @@ export const getExperienceStore = async (req: Request, res: Response): Promise<v
     // 체험 매장 선택
     const experienceResult = await selectExperienceStore();
 
-    // 분석 데이터 기록
+    // 분석 데이터 기록 (storeId가 유효한 경우만)
     try {
-      const analytics = new Analytics({
-        qrCode: experienceResult.qrId,
-        store: experienceResult.storeId,
-        eventType: "page_enter",
-        sessionId: req.headers["x-session-id"] || `exp_${Date.now()}`,
-        referrer: req.headers.referer || "spotline_experience_button",
-        metadata: {
-          nextSpotId: experienceResult.configUsed.id,
-        },
-      });
-      await analytics.save();
+      if (experienceResult.storeId && experienceResult.storeId.length === 24) {
+        const analytics = new Analytics({
+          qrCode: experienceResult.qrId,
+          store: experienceResult.storeId,
+          eventType: "page_enter",
+          sessionId: req.headers["x-session-id"] || `exp_${Date.now()}`,
+          referrer: req.headers.referer || "spotline_experience_button",
+          metadata: {
+            nextSpotId: experienceResult.configUsed.id,
+          },
+        });
+        await analytics.save();
+      } else {
+        console.log("Analytics not recorded: Invalid storeId", experienceResult.storeId);
+      }
     } catch (analyticsError) {
       console.error("Analytics recording error:", analyticsError);
       // 분석 데이터 기록 실패해도 체험은 계속 진행
@@ -44,7 +48,7 @@ export const getExperienceStore = async (req: Request, res: Response): Promise<v
     console.error("Experience store selection error:", error);
 
     // 에러 발생 시 기본 매장으로 폴백
-    const fallbackQrId = "cafe_gangnam_001";
+    const fallbackQrId = "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
     const fallbackUrl = `/api/stores/spotline/${fallbackQrId}`;
 
     res.json(
