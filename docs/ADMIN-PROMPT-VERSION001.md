@@ -616,3 +616,332 @@ describe("SpotLine 관리자 시스템", () => {
 - 사용자 추천 승인 시스템
 - 자동 QR 코드 배치 관리
 - 실시간 알림 시스템
+
+---
+
+## 🎯 SpotLine 체험하기 관리 (NEW)
+
+### 1. 체험 설정 관리 시스템
+
+관리자는 "SpotLine 체험하기" 버튼의 동작을 세밀하게 제어할 수 있습니다.
+
+```typescript
+interface ExperienceConfig {
+  name: string; // 설정 이름
+  description?: string; // 설정 설명
+  type: "fixed" | "random" | "area_based" | "weighted"; // 체험 타입
+  isActive: boolean; // 활성화 상태
+  isDefault: boolean; // 기본 설정 여부
+  settings: ExperienceSettings; // 타입별 상세 설정
+  priority: number; // 우선순위
+}
+```
+
+### 2. 체험 타입별 설정
+
+#### 고정 체험 (Fixed)
+
+```jsx
+const FixedExperienceForm = ({ settings, onChange }) => (
+  <Section title="고정 체험 설정">
+    <StoreSelector label="고정 매장" value={settings.fixedStoreQrId} onChange={(qrId) => onChange({ fixedStoreQrId: qrId })} helperText="항상 이 매장으로 안내합니다" />
+  </Section>
+);
+```
+
+#### 랜덤 체험 (Random)
+
+```jsx
+const RandomExperienceForm = ({ settings, onChange }) => (
+  <Section title="랜덤 체험 설정">
+    <MultiStoreSelector label="랜덤 선택 매장들" value={settings.randomStoreQrIds} onChange={(qrIds) => onChange({ randomStoreQrIds: qrIds })} helperText="이 매장들 중에서 랜덤하게 선택합니다" />
+  </Section>
+);
+```
+
+#### 지역별 체험 (Area Based)
+
+```jsx
+const AreaBasedExperienceForm = ({ settings, onChange }) => (
+  <Section title="지역별 체험 설정">
+    {["gangnam", "hongdae", "itaewon", "myeongdong"].map((area) => (
+      <AreaSettings key={area}>
+        <Switch label={`${area} 지역 활성화`} checked={settings.areaSettings[area].enabled} onChange={(enabled) => updateAreaSetting(area, { enabled })} />
+
+        <MultiStoreSelector
+          label={`${area} 지역 매장들`}
+          value={settings.areaSettings[area].storeQrIds}
+          onChange={(qrIds) => updateAreaSetting(area, { storeQrIds: qrIds })}
+          disabled={!settings.areaSettings[area].enabled}
+        />
+
+        <Slider
+          label="지역 가중치"
+          value={settings.areaSettings[area].weight}
+          min={1}
+          max={10}
+          onChange={(weight) => updateAreaSetting(area, { weight })}
+          helperText="높을수록 이 지역이 더 자주 선택됩니다"
+        />
+      </AreaSettings>
+    ))}
+  </Section>
+);
+```
+
+#### 가중치 기반 체험 (Weighted)
+
+```jsx
+const WeightedExperienceForm = ({ settings, onChange }) => (
+  <Section title="가중치 기반 체험 설정">
+    <WeightedStoreList>
+      {settings.weightedStores.map((store, index) => (
+        <WeightedStoreCard key={index}>
+          <StoreSelector value={store.qrId} onChange={(qrId) => updateWeightedStore(index, { qrId })} />
+
+          <Slider label="가중치" value={store.weight} min={1} max={10} onChange={(weight) => updateWeightedStore(index, { weight })} />
+
+          <Switch label="활성화" checked={store.enabled} onChange={(enabled) => updateWeightedStore(index, { enabled })} />
+
+          <Button onClick={() => removeWeightedStore(index)}>제거</Button>
+        </WeightedStoreCard>
+      ))}
+    </WeightedStoreList>
+
+    <Button onClick={addWeightedStore}>+ 매장 추가</Button>
+  </Section>
+);
+```
+
+### 3. 시간대별 설정 (고급)
+
+```jsx
+const TimeBasedSettings = ({ settings, onChange }) => (
+  <Section title="시간대별 설정">
+    <Switch label="시간대별 설정 활성화" checked={settings.timeBasedSettings.enabled} onChange={(enabled) => updateTimeSetting({ enabled })} />
+
+    {settings.timeBasedSettings.enabled && (
+      <TimeSlots>
+        {["morning", "afternoon", "evening", "night"].map((period) => (
+          <TimeSlot key={period}>
+            <h4>{getTimePeriodLabel(period)}</h4>
+            <MultiStoreSelector value={settings.timeBasedSettings[period].storeQrIds} onChange={(qrIds) => updateTimePeriod(period, { storeQrIds: qrIds })} />
+            <Slider label="가중치" value={settings.timeBasedSettings[period].weight} min={1} max={10} onChange={(weight) => updateTimePeriod(period, { weight })} />
+          </TimeSlot>
+        ))}
+      </TimeSlots>
+    )}
+  </Section>
+);
+```
+
+### 4. 체험 설정 미리보기
+
+```jsx
+const ExperiencePreview = ({ configId }) => {
+  const [previewData, setPreviewData] = useState(null);
+  const [testCount, setTestCount] = useState(10);
+
+  const runPreview = async () => {
+    const response = await fetch(`/api/admin/experience-configs/${configId}/preview?testCount=${testCount}`);
+    const data = await response.json();
+    setPreviewData(data.data);
+  };
+
+  return (
+    <PreviewSection>
+      <PreviewHeader>
+        <h3>체험 설정 미리보기</h3>
+        <div>
+          <Input type="number" value={testCount} onChange={setTestCount} min={1} max={50} label="테스트 횟수" />
+          <Button onClick={runPreview}>미리보기 실행</Button>
+        </div>
+      </PreviewHeader>
+
+      {previewData && (
+        <PreviewResults>
+          <ResultStats>
+            <StatCard title="총 테스트" value={previewData.testCount} />
+            <StatCard title="선택된 매장 수" value={previewData.results.length} />
+          </ResultStats>
+
+          <ResultChart>
+            <h4>매장별 선택 분포</h4>
+            <BarChart data={previewData.results} xAxis="storeName" yAxis="count" colorBy="percentage" />
+          </ResultChart>
+
+          <ResultTable>
+            <thead>
+              <tr>
+                <th>매장명</th>
+                <th>지역</th>
+                <th>선택 횟수</th>
+                <th>비율</th>
+              </tr>
+            </thead>
+            <tbody>
+              {previewData.results.map((result, index) => (
+                <tr key={index}>
+                  <td>{result.storeName}</td>
+                  <td>{result.area}</td>
+                  <td>{result.count}</td>
+                  <td>{result.percentage}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </ResultTable>
+        </PreviewResults>
+      )}
+    </PreviewSection>
+  );
+};
+```
+
+### 5. 체험 통계 대시보드
+
+```jsx
+const ExperienceStatsDashboard = () => {
+  const stats = useExperienceStats();
+
+  return (
+    <StatsDashboard>
+      <StatsHeader>
+        <h2>SpotLine 체험하기 통계</h2>
+        <DateRangePicker onChange={handleDateRangeChange} />
+      </StatsHeader>
+
+      <StatsOverview>
+        <MetricCard title="총 체험 횟수" value={stats.totalExperiences} change={stats.experienceChange} period="지난 7일" />
+
+        <MetricCard title="체험된 매장 수" value={stats.uniqueStores} change={stats.storeChange} period="지난 7일" />
+
+        <MetricCard title="일평균 체험" value={stats.averagePerDay} change={stats.avgChange} period="지난 7일" />
+      </StatsOverview>
+
+      <StatsCharts>
+        <ChartSection>
+          <h3>일별 체험 추이</h3>
+          <LineChart data={stats.dailyStats} xAxis="date" yAxis="count" />
+        </ChartSection>
+
+        <ChartSection>
+          <h3>인기 체험 매장 TOP 10</h3>
+          <BarChart data={stats.topStores} xAxis="storeName" yAxis="count" />
+        </ChartSection>
+      </StatsCharts>
+
+      <ConfigUsageTable>
+        <h3>체험 설정별 사용 통계</h3>
+        <Table>
+          <thead>
+            <tr>
+              <th>설정명</th>
+              <th>타입</th>
+              <th>사용 횟수</th>
+              <th>마지막 사용</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.configUsage.map((config) => (
+              <tr key={config.id}>
+                <td>{config.name}</td>
+                <td>{config.type}</td>
+                <td>{config.usageCount}</td>
+                <td>{formatDate(config.lastUsed)}</td>
+                <td>
+                  <StatusBadge active={config.isActive} default={config.isDefault} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </ConfigUsageTable>
+    </StatsDashboard>
+  );
+};
+```
+
+### 6. 체험 설정 관리 API
+
+```typescript
+// 체험 설정 생성
+POST /api/admin/experience-configs
+{
+  "name": "카페 중심 체험",
+  "description": "카페 매장에 높은 가중치를 부여한 체험 설정",
+  "type": "weighted",
+  "isDefault": false,
+  "settings": {
+    "weightedStores": [
+      { "qrId": "cafe_gangnam_001", "weight": 5, "enabled": true },
+      { "qrId": "cafe_hongdae_001", "weight": 5, "enabled": true },
+      { "qrId": "culture_gangnam_001", "weight": 2, "enabled": true }
+    ]
+  },
+  "priority": 80
+}
+
+// 체험 설정 목록 조회
+GET /api/admin/experience-configs?active=true
+
+// 기본 설정으로 지정
+PATCH /api/admin/experience-configs/{id}/set-default
+
+// 체험 설정 미리보기
+GET /api/admin/experience-configs/{id}/preview?testCount=20
+
+// 체험 통계 조회
+GET /api/experience/stats?days=30
+```
+
+### 7. 프론트엔드 연동
+
+관리자가 설정한 체험 설정은 자동으로 프론트엔드에 적용됩니다:
+
+```typescript
+// 프론트엔드에서 사용할 새로운 API
+const handleSpotlineExperience = async () => {
+  try {
+    // 관리자 설정에 따라 자동으로 매장 선택
+    const response = await fetch("/api/experience/select", {
+      headers: {
+        "x-session-id": generateSessionId(),
+      },
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 선택된 매장으로 리다이렉트
+      window.location.href = `http://localhost:4000${result.data.redirectUrl}`;
+    }
+  } catch (error) {
+    console.error("체험 매장 선택 실패:", error);
+    // 기본 매장으로 폴백
+    window.location.href = "http://localhost:4000/api/stores/spotline/cafe_gangnam_001";
+  }
+};
+```
+
+### 8. 관리자 가이드라인
+
+```markdown
+체험 설정 관리 원칙:
+
+✅ 해야 할 것:
+
+- 기본 설정은 항상 하나만 유지
+- 비활성화된 매장은 체험에서 제외
+- 지역별 균형을 고려한 설정
+- 정기적인 체험 통계 확인
+
+❌ 하지 말아야 할 것:
+
+- 모든 설정을 비활성화 (기본 설정 필수)
+- 존재하지 않는 매장 QR 코드 사용
+- 과도하게 복잡한 가중치 설정
+- 시간대별 설정 없이 시간 기반 활성화
+```
+
+이제 관리자는 "SpotLine 체험하기" 기능을 완전히 제어할 수 있으며, 다양한 전략으로 사용자 경험을 최적화할 수 있습니다.

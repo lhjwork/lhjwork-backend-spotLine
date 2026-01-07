@@ -190,3 +190,83 @@ export interface LogEventRequest {
   sessionId?: string;
   metadata?: IAnalytics["metadata"];
 }
+
+// ExperienceConfig 관련 타입
+export interface IExperienceConfig extends Document {
+  name: string;
+  description?: string;
+  type: "fixed" | "random" | "area_based" | "weighted";
+  isActive: boolean;
+  isDefault: boolean;
+  settings: {
+    fixedStoreQrId?: string;
+    randomStoreQrIds?: string[];
+    areaSettings?: {
+      gangnam: {
+        enabled: boolean;
+        storeQrIds: string[];
+        weight: number;
+      };
+      hongdae: {
+        enabled: boolean;
+        storeQrIds: string[];
+        weight: number;
+      };
+      itaewon: {
+        enabled: boolean;
+        storeQrIds: string[];
+        weight: number;
+      };
+      myeongdong: {
+        enabled: boolean;
+        storeQrIds: string[];
+        weight: number;
+      };
+    };
+    weightedStores?: Array<{
+      qrId: string;
+      weight: number;
+      enabled: boolean;
+    }>;
+    excludeStoreQrIds?: string[];
+    timeBasedSettings?: {
+      enabled: boolean;
+      morning: {
+        storeQrIds: string[];
+        weight: number;
+      };
+      afternoon: {
+        storeQrIds: string[];
+        weight: number;
+      };
+      evening: {
+        storeQrIds: string[];
+        weight: number;
+      };
+      night: {
+        storeQrIds: string[];
+        weight: number;
+      };
+    };
+  };
+  priority: number;
+  usageCount: number;
+  lastUsed?: Date;
+  createdBy: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateExperienceConfigRequest {
+  name: string;
+  description?: string;
+  type: IExperienceConfig["type"];
+  isDefault?: boolean;
+  settings: IExperienceConfig["settings"];
+  priority?: number;
+}
+
+export interface UpdateExperienceConfigRequest extends Partial<CreateExperienceConfigRequest> {
+  isActive?: boolean;
+}

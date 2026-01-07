@@ -14,6 +14,9 @@ import recommendationsRouter from "./routes/recommendations";
 import analyticsRouter from "./routes/analytics";
 import adminRouter from "./routes/admin";
 import geocodingRouter from "./routes/geocoding";
+import experienceConfigRouter from "./routes/experienceConfig";
+import experienceRouter from "./routes/experience";
+import demoRouter from "./routes/demo";
 
 dotenv.config();
 
@@ -36,6 +39,9 @@ app.use("/api/stores", storesRouter);
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/admin/experience-configs", experienceConfigRouter);
+app.use("/api/experience", experienceRouter);
+app.use("/api/demo", demoRouter);
 app.use("/api/geocoding", geocodingRouter);
 
 // Swagger 문서
