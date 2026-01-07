@@ -156,3 +156,36 @@ export const getDailyTraffic = async (filters: DailyTrafficFilters = {}): Promis
     { $sort: { _id: 1 } },
   ]);
 };
+// SpotLine 전용 이벤트 로깅 (개인 식별 데이터 제외)
+export const logSpotlineEvent = async (eventData: {
+  qrCode: string;
+  store: string;
+  eventType: "page_enter" | "spot_click" | "map_link_click" | "page_exit" | "external_link_click";
+  targetStore?: string;
+  sessionId?: string;
+  metadata?: {
+    spotPosition?: number;
+    stayDuration?: number;
+    linkType?: string;
+    nextSpotId?: string;
+  };
+  timestamp: Date;
+}): Promise<IAnalytics> => {
+  try {
+    const analytics = new Analytics({
+      qrCode: eventData.qrCode,
+      store: eventData.store,
+      eventType: eventData.eventType,
+      targetStore: eventData.targetStore,
+      sessionId: eventData.sessionId,
+      timestamp: eventData.timestamp,
+      metadata: eventData.metadata,
+    });
+
+    const savedAnalytics = await analytics.save();
+    return savedAnalytics;
+  } catch (error) {
+    console.error("SpotLine 이벤트 로깅 오류:", error);
+    throw new Error("이벤트 로깅 중 오류가 발생했습니다");
+  }
+};

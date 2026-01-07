@@ -96,3 +96,30 @@ export const existsById = async (id: string): Promise<boolean> => {
 export const getCategoryStats = async (): Promise<CategoryStats[]> => {
   return await Store.aggregate([{ $match: { isActive: true } }, { $group: { _id: "$category", count: { $sum: 1 } } }, { $sort: { count: -1 } }]);
 };
+// SpotLine 정체성에 맞는 매장 조회
+export const getSpotlineStoreByQR = async (qrId: string): Promise<IStore | null> => {
+  try {
+    const store = await Store.findOne({
+      "qrCode.id": qrId,
+      "qrCode.isActive": true,
+      isActive: true,
+    }).select({
+      name: 1,
+      shortDescription: 1,
+      spotlineStory: 1,
+      representativeImage: 1,
+      location: 1,
+      externalLinks: 1,
+      qrCode: 1,
+      // 호환성을 위한 기존 필드들
+      description: 1,
+      images: 1,
+      contact: 1,
+    });
+
+    return store;
+  } catch (error) {
+    console.error("SpotLine 매장 조회 오류:", error);
+    throw new Error("매장 조회 중 오류가 발생했습니다");
+  }
+};

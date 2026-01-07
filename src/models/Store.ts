@@ -45,6 +45,25 @@ const storeSchema = new Schema<IStore>({
     saturday: { open: String, close: String },
     sunday: { open: String, close: String },
   },
+  // SpotLine 정체성에 맞는 필드들
+  shortDescription: {
+    type: String,
+    maxlength: 100, // 한 문장 설명만 허용
+    trim: true,
+  },
+  spotlineStory: {
+    type: String,
+    maxlength: 500, // 접힘 UI용 상세 설명
+    trim: true,
+  },
+  representativeImage: String, // 대표 이미지 1장만
+  externalLinks: {
+    instagram: String,
+    blog: String,
+    notion: String,
+    website: String,
+  },
+  // 기존 필드들 (호환성 유지)
   description: String,
   tags: [String],
   images: [String],

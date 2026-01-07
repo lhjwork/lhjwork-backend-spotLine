@@ -214,3 +214,58 @@ router.put("/:id", recommendationController.updateRecommendation);
 router.delete("/:id", recommendationController.deleteRecommendation);
 
 export default router;
+/**
+ * @swagger
+ * /api/recommendations/next-spots/{storeId}:
+ *   get:
+ *     summary: 다음으로 이어지는 Spot 조회 (SpotLine 전용)
+ *     tags: [Recommendations]
+ *     description: 현재 장소에서 자연스럽게 이어지는 2-4개의 Spot 제공
+ *     parameters:
+ *       - in: path
+ *         name: storeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 현재 매장 ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 4
+ *           maximum: 4
+ *         description: 결과 개수 (최대 4개)
+ *     responses:
+ *       200:
+ *         description: 다음 Spot 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       maxItems: 4
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                           shortDescription:
+ *                             type: string
+ *                           representativeImage:
+ *                             type: string
+ *                           mapLink:
+ *                             type: string
+ *                           category:
+ *                             type: string
+ *                           walkingTime:
+ *                             type: number
+ *                           distance:
+ *                             type: number
+ */
+router.get("/next-spots/:storeId", recommendationController.getNextSpots);

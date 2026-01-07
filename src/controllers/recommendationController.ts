@@ -96,3 +96,17 @@ export const getCategoryStats = async (req: Request, res: Response): Promise<voi
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, errorMessage, null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
   }
 };
+// 다음으로 이어지는 Spot 조회 (SpotLine 전용)
+export const getNextSpots = async (req: Request<{ storeId: string }, {}, {}, { limit?: string }>, res: Response): Promise<void> => {
+  try {
+    const { storeId } = req.params;
+    const limit = parseInt(req.query.limit || "4");
+
+    const nextSpots = await recommendationService.getNextSpots(storeId, limit);
+
+    res.json(formatResponse(true, "다음 Spot 조회 성공", nextSpots));
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다";
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, errorMessage, null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
+  }
+};

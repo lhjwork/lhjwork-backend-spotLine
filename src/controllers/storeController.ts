@@ -113,3 +113,41 @@ export const getNearbyStores = async (req: Request<{ lat: string; lng: string },
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, errorMessage, null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
   }
 };
+
+// SpotLine 정체성에 맞는 매장 상세 조회 (QR 스캔용)
+export const getSpotlineStoreByQR = async (req: Request<{ qrId: string }>, res: Response): Promise<void> => {
+  try {
+    const { qrId } = req.params;
+    const store = await storeService.getSpotlineStoreByQR(qrId);
+
+    if (!store) {
+      res.status(HTTP_STATUS.NOT_FOUND).json(formatResponse(false, "매장을 찾을 수 없습니다", null, HTTP_STATUS.NOT_FOUND));
+      return;
+    }
+
+    // SpotLine 정체성에 맞는 응답 형태
+    const spotlineResponse = {
+      id: store._id,
+      name: store.name,
+      shortDescription: store.shortDescription || store.description?.substring(0, 100),
+      representativeImage: store.representativeImage || store.images?.[0],
+      location: {
+        address: store.location.address,
+        coordinates: store.location.coordinates,
+        mapLink: `https://maps.google.com/?q=${store.location.coordinates.coordinates[1]},${store.location.coordinates.coordinates[0]}`,
+      },
+      externalLinks: store.externalLinks || {
+        instagram: store.contact?.instagram,
+        website: store.contact?.website,
+      },
+      spotlineStory: store.spotlineStory,
+      nextSpots: [], // 추천 서비스에서 별도로 조회
+      qrCode: store.qrCode,
+    };
+
+    res.json(formatResponse(true, "SpotLine 매장 조회 성공", spotlineResponse));
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다";
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, errorMessage, null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
+  }
+};

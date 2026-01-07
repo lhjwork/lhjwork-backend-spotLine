@@ -104,3 +104,37 @@ export const getDailyTraffic = async (req: Request<{}, {}, {}, AnalyticsQueryPar
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, errorMessage, null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
   }
 };
+// SpotLine 전용 이벤트 로깅
+export const logSpotlineEvent = async (
+  req: Request<
+    {},
+    {},
+    {
+      qrCode: string;
+      store: string;
+      eventType: "page_enter" | "spot_click" | "map_link_click" | "page_exit" | "external_link_click";
+      targetStore?: string;
+      sessionId?: string;
+      metadata?: {
+        spotPosition?: number;
+        stayDuration?: number;
+        linkType?: string;
+        nextSpotId?: string;
+      };
+    }
+  >,
+  res: Response
+): Promise<void> => {
+  try {
+    const eventData = {
+      ...req.body,
+      timestamp: new Date(),
+    };
+
+    const result = await analyticsService.logSpotlineEvent(eventData);
+    res.status(HTTP_STATUS.CREATED).json(formatResponse(true, "SpotLine 이벤트 로깅 성공", result, HTTP_STATUS.CREATED));
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다";
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, errorMessage, null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
+  }
+};

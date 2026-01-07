@@ -30,6 +30,17 @@ export interface IStore extends Document {
   businessHours?: {
     [key: string]: { open?: string; close?: string };
   };
+  // SpotLine 정체성에 맞는 필드들
+  shortDescription?: string; // 한 문장 설명
+  spotlineStory?: string; // 접힘 UI용 상세 설명
+  representativeImage?: string; // 대표 이미지 1장
+  externalLinks?: {
+    instagram?: string;
+    blog?: string;
+    notion?: string;
+    website?: string;
+  };
+  // 기존 필드들 (호환성 유지)
   description?: string;
   tags?: string[];
   images?: string[];
@@ -69,21 +80,20 @@ export interface IRecommendation extends Document {
   createdAt: Date;
 }
 
-// Analytics 관련 타입
+// Analytics 관련 타입 (SpotLine 정체성 반영)
 export interface IAnalytics extends Document {
   qrCode: string;
   store: Types.ObjectId;
-  eventType: "qr_scan" | "page_view" | "recommendation_click" | "map_click" | "store_visit";
+  eventType: "page_enter" | "spot_click" | "map_link_click" | "page_exit" | "external_link_click";
   targetStore?: Types.ObjectId;
   sessionId?: string;
-  userAgent?: string;
-  ipAddress?: string;
   referrer?: string;
   timestamp: Date;
   metadata?: {
-    category?: string;
-    position?: number;
-    duration?: number;
+    spotPosition?: number; // spot 위치 (1-4)
+    stayDuration?: number; // 체류 시간 (초)
+    linkType?: string; // 외부 링크 타입
+    nextSpotId?: string; // 다음 spot ID
   };
 }
 
@@ -152,6 +162,12 @@ export interface CreateStoreRequest {
   qrCode: IStore["qrCode"];
   contact?: IStore["contact"];
   businessHours?: IStore["businessHours"];
+  // SpotLine 정체성에 맞는 필드들
+  shortDescription?: string;
+  spotlineStory?: string;
+  representativeImage?: string;
+  externalLinks?: IStore["externalLinks"];
+  // 기존 필드들 (호환성 유지)
   description?: string;
   tags?: string[];
   images?: string[];

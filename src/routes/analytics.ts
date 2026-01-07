@@ -250,3 +250,59 @@ router.get("/recommendations/performance", analyticsController.getRecommendation
 router.get("/traffic/daily", analyticsController.getDailyTraffic);
 
 export default router;
+/**
+ * @swagger
+ * /api/analytics/spotline-event:
+ *   post:
+ *     summary: SpotLine 전용 이벤트 로깅
+ *     tags: [Analytics]
+ *     description: 개인 식별 데이터 없이 간접 지표만 수집
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - qrCode
+ *               - store
+ *               - eventType
+ *             properties:
+ *               qrCode:
+ *                 type: string
+ *                 description: QR 코드 ID
+ *               store:
+ *                 type: string
+ *                 description: 매장 ID
+ *               eventType:
+ *                 type: string
+ *                 enum: [page_enter, spot_click, map_link_click, page_exit, external_link_click]
+ *                 description: 이벤트 타입
+ *               targetStore:
+ *                 type: string
+ *                 description: 대상 매장 ID (spot_click 시)
+ *               sessionId:
+ *                 type: string
+ *                 description: 세션 ID
+ *               metadata:
+ *                 type: object
+ *                 properties:
+ *                   spotPosition:
+ *                     type: number
+ *                     description: spot 위치 (1-4)
+ *                   stayDuration:
+ *                     type: number
+ *                     description: 체류 시간 (초)
+ *                   linkType:
+ *                     type: string
+ *                     description: 외부 링크 타입
+ *                   nextSpotId:
+ *                     type: string
+ *                     description: 다음 spot ID
+ *     responses:
+ *       201:
+ *         description: 이벤트 로깅 성공
+ *       400:
+ *         description: 잘못된 요청
+ */
+router.post("/spotline-event", analyticsController.logSpotlineEvent);

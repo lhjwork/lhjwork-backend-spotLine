@@ -14,25 +14,33 @@ const analyticsSchema = new Schema<IAnalytics>({
   },
   eventType: {
     type: String,
-    enum: ["qr_scan", "page_view", "recommendation_click", "map_click", "store_visit"],
+    enum: [
+      "page_enter", // 페이지 진입
+      "spot_click", // spot 클릭
+      "map_link_click", // 지도 링크 클릭
+      "page_exit", // 페이지 이탈 (체류 시간 계산용)
+      "external_link_click", // 외부 링크 클릭
+    ],
     required: true,
   },
   targetStore: {
     type: Schema.Types.ObjectId,
     ref: "Store",
   },
-  sessionId: String,
-  userAgent: String,
-  ipAddress: String,
+  // 개인 식별 데이터 제거
+  sessionId: String, // 세션 기반으로만 추적
+  // ipAddress: String, // 제거
+  // userAgent: String, // 제거
   referrer: String,
   timestamp: {
     type: Date,
     default: getKoreanTime, // 한국 시간으로 기본값 설정
   },
   metadata: {
-    category: String,
-    position: Number,
-    duration: Number,
+    spotPosition: Number, // spot 위치 (1-4)
+    stayDuration: Number, // 체류 시간 (초)
+    linkType: String, // 외부 링크 타입 (instagram, blog, etc)
+    nextSpotId: String, // 다음 spot ID
   },
 });
 

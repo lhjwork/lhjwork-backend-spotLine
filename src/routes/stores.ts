@@ -85,6 +85,66 @@ router.get("/qr/:qrId", storeController.getStoreByQR);
 
 /**
  * @swagger
+ * /api/stores/spotline/{qrId}:
+ *   get:
+ *     summary: SpotLine QR 스캔 전용 매장 조회
+ *     tags: [Stores]
+ *     description: SpotLine 정체성에 맞는 간소화된 매장 정보 제공
+ *     parameters:
+ *       - in: path
+ *         name: qrId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: QR 코드 ID
+ *     responses:
+ *       200:
+ *         description: SpotLine 매장 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         shortDescription:
+ *                           type: string
+ *                         representativeImage:
+ *                           type: string
+ *                         location:
+ *                           type: object
+ *                           properties:
+ *                             address:
+ *                               type: string
+ *                             mapLink:
+ *                               type: string
+ *                         externalLinks:
+ *                           type: object
+ *                           properties:
+ *                             instagram:
+ *                               type: string
+ *                             blog:
+ *                               type: string
+ *                             notion:
+ *                               type: string
+ *                             website:
+ *                               type: string
+ *                         spotlineStory:
+ *                           type: string
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+router.get("/spotline/:qrId", storeController.getSpotlineStoreByQR);
+
+/**
+ * @swagger
  * /api/stores/nearby/{lat}/{lng}:
  *   get:
  *     summary: 근처 매장 검색
