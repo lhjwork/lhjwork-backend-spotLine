@@ -154,3 +154,64 @@ export const getRecommendationsForStore = async (storeId: string): Promise<any[]
     return [];
   }
 };
+
+// 관리자용 매장 목록 조회 (페이지네이션 포함)
+interface AdminStoreFilters extends StoreFilters {
+  page?: number;
+  limit?: number;
+}
+
+export const getAdminStores = async (filters: AdminStoreFilters = {}): Promise<{
+  stores: IStore[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}> => {
+  const { category, area, active, page = 1, limit = 20 } = filters;
+  const filter: any = {};
+
+  if (category) filter.category = category;
+  if (area) filter["location.area"] = area;
+  if (active !== undefined) filter.isActive = active === "true";
+
+  const skip = (page - 1) * limit;
+  
+  const [stores, totalCount] = await Promise.all([
+    Store.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Store.countDocuments(filter)
+  ]);
+
+  return {
+    stores,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limit),
+    currentPage: page
+  };
+};
+
+// 매장 통계 조회
+export const getStoreStats = async (): Promise<{
+  totalStores: number;
+  activeStores: number;
+  inactiveStores: number;
+  categoryStats: CategoryStats[];
+  recentStores: IStore[];
+}> => {
+  const [totalStores, activeStores, categoryStats, recentStores] = await Promise.all([
+    Store.countDocuments(),
+    Store.countDocuments({ isActive: true }),
+    getCategoryStats(),
+    Store.find().sort({ createdAt: -1 }).limit(5)
+  ]);
+
+  return {
+    totalStores,
+    activeStores,
+    inactiveStores: totalStores - activeStores,
+    categoryStats,
+    recentStores
+  };
+};

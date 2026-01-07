@@ -92,3 +92,79 @@ export const getNextSpots = async (fromStoreId: string, limit: number = 4): Prom
     throw new Error("다음 Spot 조회 중 오류가 발생했습니다");
   }
 };
+
+// 관리자용 추천 목록 조회 (페이지네이션 포함)
+interface AdminRecommendationFilters {
+  fromStore?: string;
+  toStore?: string;
+  category?: string;
+  active?: string;
+  page?: number;
+  limit?: number;
+}
+
+export const getAdminRecommendations = async (filters: AdminRecommendationFilters = {}): Promise<{
+  recommendations: IRecommendation[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}> => {
+  const { fromStore, toStore, category, active, page = 1, limit = 20 } = filters;
+  const filter: any = {};
+
+  if (fromStore) filter.fromStore = fromStore;
+  if (toStore) filter.toStore = toStore;
+  if (category) filter.category = category;
+  if (active !== undefined) filter.isActive = active === "true";
+
+  const skip = (page - 1) * limit;
+  
+  const [recommendations, totalCount] = await Promise.all([
+    Recommendation.find(filter)
+      .populate("fromStore", "name")
+      .populate("toStore", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Recommendation.countDocuments(filter)
+  ]);
+
+  return {
+    recommendations,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limit),
+    currentPage: page
+  };
+};
+
+// 추천 통계 조회
+export const getRecommendationStats = async (): Promise<{
+  totalRecommendations: number;
+  activeRecommendations: number;
+  inactiveRecommendations: number;
+  categoryStats: any[];
+  topStores: any[];
+}> => {
+  const [totalRecommendations, activeRecommendations, categoryStats, topStores] = await Promise.all([
+    Recommendation.countDocuments(),
+    Recommendation.countDocuments({ isActive: true }),
+    getCategoryStats(),
+    Recommendation.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: "$fromStore", count: { $sum: 1 } } },
+      { $lookup: { from: "stores", localField: "_id", foreignField: "_id", as: "store" } },
+      { $unwind: "$store" },
+      { $project: { storeName: "$store.name", count: 1 } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ])
+  ]);
+
+  return {
+    totalRecommendations,
+    activeRecommendations,
+    inactiveRecommendations: totalRecommendations - activeRecommendations,
+    categoryStats,
+    topStores
+  };
+};

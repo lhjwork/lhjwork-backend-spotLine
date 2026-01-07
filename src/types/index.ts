@@ -171,6 +171,11 @@ export interface CreateStoreRequest {
   description?: string;
   tags?: string[];
   images?: string[];
+  isActive?: boolean;
+  active?: boolean; // 관리자용 필드
+  createdBy?: string;
+  updatedBy?: string;
+  updatedAt?: Date;
 }
 
 export interface CreateRecommendationRequest {
@@ -180,6 +185,10 @@ export interface CreateRecommendationRequest {
   priority?: number;
   description?: string;
   tags?: string[];
+  isActive?: boolean;
+  createdBy?: string;
+  updatedBy?: string;
+  updatedAt?: Date;
 }
 
 export interface LogEventRequest {
