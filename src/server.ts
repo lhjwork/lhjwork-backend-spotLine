@@ -26,14 +26,42 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:5173"],
+    origin: [
+      // Local development
+      "http://localhost:3000", 
+      "http://localhost:3001", 
+      "http://localhost:3002", 
+      "http://localhost:3003", 
+      "http://localhost:5173",
+      // Production domains
+      "https://front-spot-line.vercel.app",
+      "https://lhjwork-backend-spotline.onrender.com"
+    ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-session-id"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "x-session-id",
+      "Accept",
+      "Origin",
+      "X-Requested-With"
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 200
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Handle preflight requests explicitly
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-session-id,Accept,Origin,X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 // MongoDB 연결
 mongoose
