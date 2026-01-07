@@ -19,6 +19,8 @@
     "migrate:data": "ts-node -r tsconfig-paths/register src/scripts/migrateData.ts",
     "seed": "ts-node -r tsconfig-paths/register src/scripts/seedData.ts",
     "demo": "ts-node -r tsconfig-paths/register src/scripts/createDemoData.ts",
+    "check-structure": "ts-node -r tsconfig-paths/register src/scripts/checkSystemStructure.ts",
+    "cleanup-test": "ts-node -r tsconfig-paths/register src/scripts/cleanupTestData.ts",
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist node_modules",
     "prebuild": "rimraf dist",
