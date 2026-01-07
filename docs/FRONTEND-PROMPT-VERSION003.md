@@ -18,15 +18,15 @@ SpotLine의 목적:
 
 ### 1. 시스템 구조 명확화
 
-- **체험 시스템**: 업주 소개용 ("이런 서비스입니다")
+- **데모 시스템**: 업주 소개용 ("이런 서비스입니다")
 - **운영 시스템**: 실제 서비스 ("실제로 사용하세요")
 
 ### 2. 버튼 구분 명확화
 
-- **체험하기 버튼**: 업주에게 서비스 소개할 때 사용
-- **SpotLine 체험하기 버튼**: 사용자가 실제 서비스 체험
+- **데모보기 버튼**: 업주에게 서비스 소개할 때 사용
+- **SpotLine 시작**: 사용자가 실제 서비스 체험
 
-## 🎭 "체험하기" 버튼 구현 (업주 소개용)
+## 🎭 "데모보기" 버튼 구현 (업주 소개용)
 
 ### 기본 구현
 
@@ -40,18 +40,18 @@ interface ExperienceResult {
   isDemoMode: true;
 }
 
-const handleExperienceDemo = async (): Promise<void> => {
+const handleDemoView = async (): Promise<void> => {
   try {
     const response = await fetch("http://localhost:4000/api/demo/experience");
     const data: { success: boolean; data: ExperienceResult } = await response.json();
 
     if (data.success) {
-      // 업주 소개용 체험 매장으로 이동 (통계 수집 없음)
+      // 업주 소개용 데모 매장으로 이동 (통계 수집 없음)
       window.location.href = data.data.redirectUrl;
     }
   } catch (error) {
-    console.error("체험 중 오류:", error);
-    // 폴백: 기본 체험 매장으로 이동
+    console.error("데모 중 오류:", error);
+    // 폴백: 기본 데모 매장으로 이동
     window.location.href = "http://localhost:4000/api/demo/stores/demo_cafe_001";
   }
 };
@@ -109,7 +109,7 @@ const ExperienceButton: React.FC<ExperienceButtonProps> = ({ className = "experi
 export default ExperienceButton;
 ```
 
-## 🎯 "SpotLine 체험하기" 버튼 구현 (사용자용)
+## 🎯 "SpotLine 시작" 버튼 구현 (사용자용)
 
 ### 기본 구현
 
