@@ -32,9 +32,11 @@ app.use(
       "http://localhost:3001", 
       "http://localhost:3002", 
       "http://localhost:3003", 
+      "http://localhost:4000",
       "http://localhost:5173",
       // Production domains
       "https://front-spot-line.vercel.app",
+      "https://admin-spotline.vercel.app",
       "https://lhjwork-backend-spotline.onrender.com"
     ],
     credentials: true,
