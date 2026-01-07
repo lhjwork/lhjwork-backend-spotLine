@@ -22,14 +22,38 @@ pnpm install
 
 ### 2. 환경 변수 설정
 
-`.env.example`을 참고하여 `.env` 파일을 생성하고 설정:
+환경에 맞는 `.env` 파일을 설정:
+
+#### 🏠 로컬 개발 환경 (권장)
+
+```bash
+# .env.local 파일 사용 (이미 생성됨)
+cp .env.local .env
+```
+
+#### ☁️ 프로덕션 환경
+
+```bash
+# .env.production 파일 사용
+cp .env.production .env
+```
+
+주요 환경 변수:
 
 ```env
 PORT=4000
-MONGODB_URI=your-mongodb-connection-string
+MONGODB_URI=mongodb://localhost:27017/spotline-dev  # 로컬
+# MONGODB_URI=mongodb+srv://...  # 프로덕션
 NODE_ENV=development
 JWT_SECRET=your-jwt-secret
 ```
+
+#### 📋 로컬 MongoDB 설정
+
+로컬 개발을 위해서는 MongoDB를 먼저 설치해야 합니다:
+
+- **설치 가이드**: [docs/LOCAL-MONGODB-SETUP.md](docs/LOCAL-MONGODB-SETUP.md)
+- **빠른 설정**: `pnpm run setup:local` (샘플 데이터 포함)
 
 ### 3. TypeScript 빌드
 
@@ -59,10 +83,22 @@ pnpm run dev:watch
 
 ## 🔧 주요 스크립트
 
+### 🏠 로컬 개발 환경
+
+- `pnpm run dev:local` - 로컬 MongoDB로 개발 서버 실행
+- `pnpm run dev:watch:local` - 파일 변경 감지 개발 서버 (로컬)
+- `pnpm run test:db:local` - 로컬 MongoDB 연결 테스트
+- `pnpm run setup:local` - 로컬 DB 초기 설정 (샘플 데이터 포함)
+
+### 🔨 빌드 및 실행
+
 - `pnpm run build` - TypeScript 컴파일
 - `pnpm start` - 프로덕션 서버 실행
 - `pnpm run dev` - 개발 서버 실행
 - `pnpm run dev:watch` - 파일 변경 감지 개발 서버
+
+### 🗄️ 데이터베이스
+
 - `pnpm run test:db` - 데이터베이스 연결 테스트
 - `pnpm run type-check` - TypeScript 타입 검사
 
