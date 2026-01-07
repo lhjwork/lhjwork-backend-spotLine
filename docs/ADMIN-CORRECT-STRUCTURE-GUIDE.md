@@ -1,11 +1,12 @@
-# 🎯 Admin 시스템 최종 구조 가이드
+# 🎯 Admin 시스템 올바른 구조 가이드
 
 ## ✅ 현재 백엔드 구조 (검증 완료)
 
-### 🎭 데모 시스템 (업주 소개용) - 완료
+### 🎭 체험 시스템 (업주 소개용) - 완료
 
+- **목적**: "이런 서비스입니다" - 업주에게 서비스 소개
 - **스키마**: `DemoStore`
-- **데이터**: 4개 데모 매장 준비 완료
+- **데이터**: 4개 체험 매장 준비 완료
   1. 카페 데모 (demo_cafe_001) - 강남역
   2. 갤러리 데모 (demo_gallery_001) - 홍대입구
   3. 레스토랑 데모 (demo_restaurant_001) - 논현동
@@ -13,8 +14,9 @@
 - **API**: `/api/demo/*`
 - **특징**: 통계 수집 없음, 업주 소개 전용
 
-### 🏪 실제 운영 시스템 (Admin 관리 대상) - 대기 중
+### 🏪 운영 시스템 (Admin 관리 대상) - 대기 중
 
+- **목적**: "실제로 사용하세요" - 정식 서비스 운영
 - **스키마**: `Store`
 - **데이터**: **0개** (Admin에서 등록해야 함)
 - **API**: `/api/stores/*`, `/api/experience`
@@ -22,7 +24,7 @@
 
 ## 🔧 Admin에서 구현해야 할 핵심 기능
 
-### 1. 실제 매장 관리 시스템
+### 1. 운영 매장 관리 시스템
 
 ```typescript
 // 매장 등록 폼 데이터 구조
@@ -58,20 +60,20 @@ interface StoreFormData {
 ```
 📊 SpotLine Admin Dashboard
 ├── 📈 전체 통계
-│   ├── 등록된 매장: 0개 ⚠️
+│   ├── 운영 매장: 0개 ⚠️
 │   ├── 활성 QR 코드: 0개
-│   ├── 이번 달 체험: 0회
-│   └── 실제 사용: 0회
+│   ├── 이번 달 사용: 0회
+│   └── SpotLine 체험: 0회
 ├── ⚠️ 알림
-│   └── "실제 운영용 매장을 등록해주세요"
+│   └── "운영용 매장을 등록해주세요"
 └── 🚀 빠른 시작
     └── "첫 매장 등록하기" 버튼
 ```
 
-#### 2.2 매장 관리
+#### 2.2 운영 매장 관리
 
 ```
-🏪 매장 관리
+🏪 운영 매장 관리
 ├── 📋 매장 목록 (현재: 0개)
 │   └── "매장이 없습니다. 첫 매장을 등록해보세요."
 ├── ➕ 새 매장 등록
@@ -83,27 +85,27 @@ interface StoreFormData {
     └── QR 코드 생성 및 다운로드
 ```
 
-#### 2.3 데모 시스템 (읽기 전용)
+#### 2.3 체험 시스템 (읽기 전용)
 
 ```
-🎭 데모 시스템 (업주 소개용)
-├── 📋 데모 매장 목록 (4개)
+🎭 체험 시스템 (업주 소개용)
+├── 📋 체험 매장 목록 (4개)
 │   ├── 카페 데모 (demo_cafe_001)
 │   ├── 갤러리 데모 (demo_gallery_001)
 │   ├── 레스토랑 데모 (demo_restaurant_001)
 │   └── 북카페 데모 (demo_bookcafe_001)
 ├── ⚠️ 주의사항
-│   └── "데모 데이터는 수정하지 마세요"
-└── 🔗 데모 링크
+│   └── "체험 데이터는 수정하지 마세요"
+└── 🔗 체험 링크
     └── /api/demo/experience
 ```
 
-#### 2.4 체험하기 설정
+#### 2.4 SpotLine 체험하기 설정
 
 ```
 🎯 SpotLine 체험하기 설정
 ├── ⚠️ 상태: 비활성화
-│   └── "실제 매장을 먼저 등록해주세요"
+│   └── "운영 매장을 먼저 등록해주세요"
 ├── 🔧 설정 (매장 등록 후 활성화)
 │   ├── 체험 방식 선택
 │   ├── 대상 매장 선택
@@ -112,9 +114,57 @@ interface StoreFormData {
     └── 현재 데이터 없음
 ```
 
-### 3. API 엔드포인트 (Admin용)
+### 3. 데이터 흐름 구분
 
-#### 3.1 매장 관리 API
+#### 3.1 체험 흐름 (업주 소개)
+
+```
+업주에게 시연
+↓
+"체험하기" 클릭
+↓
+/api/demo/experience
+↓
+DemoStore에서 랜덤 선택
+↓
+체험 매장 페이지 표시
+↓
+통계 수집 없음
+```
+
+#### 3.2 운영 흐름 - SpotLine 체험하기 (사용자)
+
+```
+사용자 체험
+↓
+"SpotLine 체험하기" 클릭
+↓
+/api/experience
+↓
+Store에서 관리자 설정에 따라 선택
+↓
+운영 매장 페이지 표시
+↓
+Analytics에 통계 수집
+```
+
+#### 3.3 운영 흐름 - 실제 QR 스캔
+
+```
+실제 QR 코드 스캔
+↓
+/api/stores/spotline/{qrId}
+↓
+Store에서 매장 정보 조회
+↓
+추천 매장 표시
+↓
+모든 행동 Analytics에 기록
+```
+
+### 4. API 엔드포인트 (Admin용)
+
+#### 4.1 운영 매장 관리 API
 
 ```typescript
 // 매장 등록
@@ -148,24 +198,7 @@ PUT /api/admin/stores/{id}
 DELETE /api/admin/stores/{id}
 ```
 
-#### 3.2 QR 코드 관리 API
-
-```typescript
-// QR 코드 생성
-POST /api/admin/qr-codes/generate
-{
-  "storeId": "store_id",
-  "customId": "real_cafe_gangnam_001"
-}
-
-// QR 코드 목록
-GET /api/admin/qr-codes
-
-// QR 코드 활성화/비활성화
-PUT /api/admin/qr-codes/{id}/toggle
-```
-
-#### 3.3 체험하기 설정 API
+#### 4.2 SpotLine 체험하기 설정 API
 
 ```typescript
 // 체험 설정 조회
@@ -181,64 +214,16 @@ POST /api/admin/experience-configs
 }
 ```
 
-### 4. 데이터 흐름 구분
-
-#### 4.1 데모 흐름 (업주 소개)
-
-```
-업주에게 시연
-↓
-"데모 체험하기" 클릭
-↓
-/api/demo/experience
-↓
-DemoStore에서 랜덤 선택
-↓
-데모 매장 페이지 표시
-↓
-통계 수집 없음
-```
-
-#### 4.2 실제 체험 흐름 (사용자)
-
-```
-사용자 체험
-↓
-"SpotLine 체험하기" 클릭
-↓
-/api/experience
-↓
-Store에서 관리자 설정에 따라 선택
-↓
-실제 매장 페이지 표시
-↓
-Analytics에 통계 수집
-```
-
-#### 4.3 실제 QR 스캔 흐름
-
-```
-실제 QR 코드 스캔
-↓
-/api/stores/spotline/{qrId}
-↓
-Store에서 매장 정보 조회
-↓
-추천 매장 표시
-↓
-모든 행동 Analytics에 기록
-```
-
 ### 5. 개발 우선순위
 
-#### Phase 1: 기본 매장 관리 (필수)
+#### Phase 1: 기본 운영 매장 관리 (필수)
 
 - [ ] 매장 등록 폼
 - [ ] 매장 목록 표시
 - [ ] 매장 수정/삭제
 - [ ] QR 코드 생성
 
-#### Phase 2: 체험 시스템 연동
+#### Phase 2: SpotLine 체험하기 연동
 
 - [ ] 체험하기 설정 관리
 - [ ] 체험 통계 확인
@@ -256,29 +241,85 @@ Store에서 매장 정보 조회
 
 1. **DemoStore 데이터 수정**: 업주 소개용이므로 건드리지 말 것
 2. **QR 코드 ID 중복**: demo*\* 와 real*\* 형태로 구분 유지
-3. **데모 통계 수집**: 데모 사용 시 Analytics 기록 금지
+3. **체험 통계 수집**: 체험 사용 시 Analytics 기록 금지
 
 #### ✅ 반드시 해야 할 것
 
-1. **실제 매장만 관리**: Store 스키마의 데이터만 CRUD
+1. **운영 매장만 관리**: Store 스키마의 데이터만 CRUD
 2. **QR 코드 고유성**: 각 매장마다 고유한 QR 코드 ID 생성
-3. **통계 구분**: 데모/체험/실제 사용 데이터 명확히 구분
+3. **통계 구분**: 체험/운영 사용 데이터 명확히 구분
 
-### 7. 테스트 방법
+### 7. 프론트엔드 구분
 
-#### 7.1 구조 확인
+#### 7.1 체험 버튼 (업주 소개용)
+
+```typescript
+const handleExperienceDemo = async (): Promise<void> => {
+  try {
+    const response = await fetch("http://localhost:4000/api/demo/experience");
+    const data = await response.json();
+
+    if (data.success) {
+      // 체험 매장으로 이동 (통계 수집 없음)
+      window.location.href = data.data.redirectUrl;
+    }
+  } catch (error) {
+    console.error("체험 오류:", error);
+  }
+};
+
+// React 컴포넌트
+const ExperienceButton: React.FC = () => (
+  <button onClick={handleExperienceDemo} className="experience-button">
+    🎭 체험하기 (업주용)
+  </button>
+);
+```
+
+#### 7.2 SpotLine 체험하기 버튼 (사용자용)
+
+```typescript
+const handleSpotlineExperience = async (): Promise<void> => {
+  try {
+    const response = await fetch("http://localhost:4000/api/experience", {
+      headers: {
+        "x-session-id": generateSessionId(), // 통계용 세션 ID
+      },
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      // 운영 매장으로 이동 (통계 수집 있음)
+      window.location.href = data.data.redirectUrl;
+    }
+  } catch (error) {
+    console.error("SpotLine 체험 오류:", error);
+  }
+};
+
+// React 컴포넌트
+const SpotlineButton: React.FC = () => (
+  <button onClick={handleSpotlineExperience} className="spotline-button">
+    🎯 SpotLine 체험하기
+  </button>
+);
+```
+
+### 8. 테스트 방법
+
+#### 8.1 구조 확인
 
 ```bash
 pnpm run check-structure
 ```
 
-#### 7.2 데모 테스트
+#### 8.2 체험 테스트 (업주 소개용)
 
 ```bash
 curl http://localhost:4000/api/demo/experience
 ```
 
-#### 7.3 실제 체험 테스트 (매장 등록 후)
+#### 8.3 SpotLine 체험하기 테스트 (매장 등록 후)
 
 ```bash
 curl http://localhost:4000/api/experience

@@ -82,10 +82,10 @@ async function checkSystemStructure() {
 
     // 6. 권장사항
     console.log("\n💡 Admin 개발 권장사항:");
-    console.log("   1. 실제 매장 등록 기능 구현");
+    console.log("   1. 운영 매장 등록 기능 구현");
     console.log("   2. QR 코드 생성 및 관리 기능");
-    console.log("   3. 데모/실제 데이터 구분 표시");
-    console.log("   4. 체험하기 설정 관리 기능");
+    console.log("   3. 체험/운영 데이터 구분 표시");
+    console.log("   4. SpotLine 체험하기 설정 관리 기능");
   } catch (error) {
     console.error("❌ 오류 발생:", error);
   } finally {
