@@ -1,4 +1,5 @@
 import Store from "../models/Store";
+import Recommendation from "../models/Recommendation";
 import { IStore, CreateStoreRequest } from "../types";
 
 // UUID 임포트 (any 타입으로 처리)
@@ -121,5 +122,35 @@ export const getSpotlineStoreByQR = async (qrId: string): Promise<IStore | null>
   } catch (error) {
     console.error("SpotLine 매장 조회 오류:", error);
     throw new Error("매장 조회 중 오류가 발생했습니다");
+  }
+};
+
+// 매장의 추천 목록 조회
+export const getRecommendationsForStore = async (storeId: string): Promise<any[]> => {
+  try {
+    const recommendations = await Recommendation.find({
+      fromStore: storeId,
+      isActive: true,
+    })
+      .populate("toStore", "name shortDescription representativeImage qrCode location.area")
+      .sort({ priority: -1 })
+      .limit(6); // 최대 6개까지
+
+    return recommendations.map((rec: any) => ({
+      id: rec.toStore._id,
+      name: rec.toStore.name,
+      shortDescription: rec.toStore.shortDescription,
+      image: rec.toStore.representativeImage,
+      qrId: rec.toStore.qrCode.id,
+      area: rec.toStore.location.area,
+      category: rec.category,
+      description: rec.description,
+      walkingTime: rec.walkingTime,
+      distance: rec.distance,
+      tags: rec.tags,
+    }));
+  } catch (error) {
+    console.error("추천 목록 조회 오류:", error);
+    return [];
   }
 };

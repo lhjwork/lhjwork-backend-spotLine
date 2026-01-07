@@ -125,6 +125,9 @@ export const getSpotlineStoreByQR = async (req: Request<{ qrId: string }>, res: 
       return;
     }
 
+    // 추천 매장 조회
+    const nextSpots = await storeService.getRecommendationsForStore(store._id.toString());
+
     // SpotLine 정체성에 맞는 응답 형태
     const spotlineResponse = {
       id: store._id,
@@ -141,7 +144,7 @@ export const getSpotlineStoreByQR = async (req: Request<{ qrId: string }>, res: 
         website: store.contact?.website,
       },
       spotlineStory: store.spotlineStory,
-      nextSpots: [], // 추천 서비스에서 별도로 조회
+      nextSpots: nextSpots,
       qrCode: store.qrCode,
     };
 

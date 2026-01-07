@@ -78,11 +78,11 @@ const selectStoreFromConfig = async (config: any): Promise<string> => {
   try {
     switch (type) {
       case "fixed":
-        return settings.fixedStoreQrId || "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+        return settings.fixedStoreQrId || "demo_cafe_001";
 
       case "random":
         const randomStores = settings.randomStoreQrIds || [];
-        if (randomStores.length === 0) return "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+        if (randomStores.length === 0) return "demo_cafe_001";
         return randomStores[Math.floor(Math.random() * randomStores.length)];
 
       case "area_based":
@@ -92,11 +92,11 @@ const selectStoreFromConfig = async (config: any): Promise<string> => {
         return await selectFromWeighted(settings);
 
       default:
-        return "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+        return "demo_cafe_001";
     }
   } catch (error) {
     console.error("Store selection error:", error);
-    return "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+    return "demo_cafe_001";
   }
 };
 
@@ -116,7 +116,7 @@ const selectFromAreaBased = async (settings: any): Promise<string> => {
   const enabledAreas = Object.entries(areaSettings).filter(([_, area]: [string, any]) => area.enabled && area.storeQrIds && area.storeQrIds.length > 0);
 
   if (enabledAreas.length === 0) {
-    return settings.fixedStoreQrId || "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+    return settings.fixedStoreQrId || "demo_cafe_001";
   }
 
   // 가중치 기반 지역 선택
@@ -134,7 +134,7 @@ const selectFromAreaBased = async (settings: any): Promise<string> => {
 
   // 폴백
   const firstArea = enabledAreas[0][1] as any;
-  return firstArea.storeQrIds[0] || "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+  return firstArea.storeQrIds[0] || "demo_cafe_001";
 };
 
 /**
@@ -148,7 +148,7 @@ const selectFromWeighted = async (settings: any): Promise<string> => {
   const enabledStores = weightedStores.filter((ws: any) => ws.enabled && ws.qrId && !excludeQrIds.includes(ws.qrId));
 
   if (enabledStores.length === 0) {
-    return settings.fixedStoreQrId || "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+    return settings.fixedStoreQrId || "demo_cafe_001";
   }
 
   // 가중치 기반 선택
@@ -164,7 +164,7 @@ const selectFromWeighted = async (settings: any): Promise<string> => {
   }
 
   // 폴백
-  return enabledStores[0].qrId || "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+  return enabledStores[0].qrId || "demo_cafe_001";
 };
 
 /**
@@ -198,8 +198,8 @@ const selectFromTimeBased = (timeSettings: any): string | null => {
  * 기본 체험 결과 반환
  */
 const getDefaultExperienceResult = async (): Promise<ExperienceResult> => {
-  // 실제 존재하는 "카페 스팟라인" 매장의 QR 코드 ID 사용
-  const defaultQrId = "6ccbb682-df55-4566-ac30-703ddb5cfb7f";
+  // 새로 생성된 "카페 스팟라인" 매장의 QR 코드 ID 사용
+  const defaultQrId = "demo_cafe_001";
 
   try {
     const store = await Store.findOne({
@@ -260,7 +260,7 @@ export const getAvailableStoreQrIds = async (): Promise<string[]> => {
     return stores.map((store) => store.qrCode.id);
   } catch (error) {
     console.error("Get available QR IDs error:", error);
-    return ["6ccbb682-df55-4566-ac30-703ddb5cfb7f", "68f2623e-328f-4ff0-b4d6-fb12724ca137"]; // 기본값
+    return ["demo_cafe_001", "demo_gallery_001", "demo_dessert_001", "demo_bookcafe_001"]; // 기본값
   }
 };
 
@@ -288,8 +288,8 @@ export const getStoreQrIdsByArea = async (): Promise<Record<string, string[]>> =
   } catch (error) {
     console.error("Get QR IDs by area error:", error);
     return {
-      gangnam: ["6ccbb682-df55-4566-ac30-703ddb5cfb7f"],
-      hongdae: ["68f2623e-328f-4ff0-b4d6-fb12724ca137"],
+      gangnam: ["demo_cafe_001", "demo_gallery_001", "demo_dessert_001"],
+      hongdae: ["demo_bookcafe_001"],
     };
   }
 };
