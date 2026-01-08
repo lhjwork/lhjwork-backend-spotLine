@@ -14,12 +14,11 @@ import productionRouter from "./routes/production";
 import qrRouter from "./routes/qr";
 import recommendationsRouter from "./routes/recommendations";
 import analyticsRouter from "./routes/analytics";
-import adminRouter from "./routes/admin";
-import dashboardRouter from "./routes/dashboard";
+import adminMainRouter from "./routes/adminMain"; // 통합 어드민 라우터
 import geocodingRouter from "./routes/geocoding";
-import experienceConfigRouter from "./routes/experienceConfig";
 import experienceRouter from "./routes/experience";
 import demoRouter from "./routes/demo";
+import liveRouter from "./routes/live";
 
 dotenv.config();
 
@@ -110,10 +109,11 @@ app.use("/api/api/*", (req, res, next) => {
   return res.redirect(301, correctedPath);
 });
 
-// Routes - 새로운 아키텍처 (올바른 구조)
-app.use("/api/demo", demoRouter); // 데모 시스템 V2.0 (백엔드 API 연동)
-app.use("/api/production", productionRouter); // 실제 운영 데이터 (Store)
-app.use("/api/qr", qrRouter); // QR 코드 관리 (새로운 구조)
+// Routes - 새로운 아키텍처 (시스템 분리)
+app.use("/api/demo", demoRouter); // 데모 시스템 V2.0 (시연용 고정 데이터)
+app.use("/api/live", liveRouter); // Live 시스템 V1.0 (실제 서비스 운영)
+app.use("/api/production", productionRouter); // 실제 운영 데이터 (호환성 유지)
+app.use("/api/qr", qrRouter); // QR 코드 관리 (통합)
 
 // 기존 호환성 유지
 app.use("/api/stores", storesRouter); // 기존 API 호환성 (Store 데이터)
@@ -121,9 +121,7 @@ app.use("/api/stores", storesRouter); // 기존 API 호환성 (Store 데이터)
 // 기타 API
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
-app.use("/api/admin", adminRouter);
-app.use("/api/admin/dashboard", dashboardRouter);
-app.use("/api/admin/experience-configs", experienceConfigRouter);
+app.use("/api/admin", adminMainRouter); // 통합 어드민 API
 app.use("/api/experience", experienceRouter);
 app.use("/api/geocoding", geocodingRouter);
 
@@ -258,11 +256,12 @@ app.get("/", (req: Request, res: Response) => {
             
             <div class="api-info">
                 <h3>🔗 주요 엔드포인트</h3>
-                <div class="endpoint">GET /api/demo/store - 데모 시스템 V2.0</div>
-                <div class="endpoint">GET /api/stores - 매장 목록</div>
+                <div class="endpoint">GET /api/demo/store - 데모 시스템 V2.0 (시연용)</div>
+                <div class="endpoint">GET /api/live/stores - Live 시스템 V1.0 (실제 서비스)</div>
+                <div class="endpoint">GET /api/admin/* - 통합 어드민 API (인증 필요)</div>
+                <div class="endpoint">GET /api/stores - 매장 목록 (호환성 유지)</div>
                 <div class="endpoint">GET /api/recommendations - 추천 목록</div>
                 <div class="endpoint">GET /api/analytics - 분석 데이터</div>
-                <div class="endpoint">POST /api/admin/login - 관리자 로그인</div>
                 <div class="endpoint">GET /health - 서버 상태</div>
             </div>
         </div>
@@ -301,28 +300,32 @@ app.get("/api", (req: Request, res: Response) => {
     description: "QR 기반 로컬 연결 서비스 (TypeScript)",
     architecture: {
       demo: {
-        description: "데모 시스템 V2.0 (백엔드 API 연동)",
+        description: "데모 시스템 V2.0 (시연용 고정 데이터)",
         endpoint: "/api/demo",
-        purpose: "업주 소개용 데모 (API 기반 데이터 관리)",
+        purpose: "업주 소개용 데모 (어드민 관리 가능)",
+        dataSource: "file-based"
+      },
+      live: {
+        description: "Live 시스템 V1.0 (실제 서비스 운영)",
+        endpoint: "/api/live",
+        purpose: "실제 매장 서비스 (DB 기반, 인증 필요)",
+        dataSource: "database"
       },
       stores: {
-        description: "매장 데이터 관리",
+        description: "매장 데이터 관리 (호환성 유지)",
         endpoint: "/api/stores",
-        purpose: "매장 정보 조회 및 관리",
-      },
-      legacy: {
-        description: "기존 호환성 유지",
-        endpoint: "/api/production",
-        redirectsTo: "/api/stores",
-      },
+        purpose: "기존 API 호환성 유지",
+        status: "legacy"
+      }
     },
     endpoints: {
       demo: "/api/demo",
+      live: "/api/live",
       stores: "/api/stores",
       production: "/api/production", // 호환성 유지
       recommendations: "/api/recommendations",
       analytics: "/api/analytics",
-      admin: "/api/admin",
+      admin: "/api/admin", // 통합 어드민 API
       geocoding: "/api/geocoding",
     },
   });
