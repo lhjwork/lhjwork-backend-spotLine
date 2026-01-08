@@ -67,11 +67,21 @@ const storeSchema = new Schema<IStore>({
   description: String,
   tags: [String],
   images: [String],
+
+  // QR 코드 연결 (역참조) - 새로운 구조
+  qrCodes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "QRCode",
+    },
+  ],
+
+  // 기존 QR 코드 필드 (호환성 유지, 향후 제거 예정)
   qrCode: {
     id: {
       type: String,
       unique: true,
-      required: true,
+      sparse: true, // null 값 허용하면서 unique 유지
     },
     isActive: {
       type: Boolean,

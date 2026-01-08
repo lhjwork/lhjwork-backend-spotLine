@@ -1,218 +1,254 @@
 import mongoose from "mongoose";
+import DemoStore from "../models/DemoStore";
+import DemoRecommendation from "../models/DemoRecommendation";
 import dotenv from "dotenv";
-import Store from "../models/Store";
-import Recommendation from "../models/Recommendation";
 
-dotenv.config();
+dotenv.config({ path: ".env.local" });
 
-const createDemoRecommendations = async () => {
+async function createDemoRecommendations() {
   try {
-    console.log("🔗 SpotLine 데모 추천 데이터 생성 시작...");
+    console.log("🔗 데모 추천 관계 생성 시작...");
 
-    const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/spotline";
-    console.log(`📡 MongoDB 연결 중: ${mongoUri}`);
-
-    await mongoose.connect(mongoUri);
+    // MongoDB 연결
+    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/spotline-dev");
     console.log("✅ MongoDB 연결 성공!");
 
     // 기존 추천 데이터 삭제
-    await Recommendation.deleteMany({});
-    console.log("🗑️ 기존 추천 데이터 삭제 완료");
+    await DemoRecommendation.deleteMany({});
+    console.log("🗑️ 기존 데모 추천 데이터 삭제 완료");
 
-    // 매장 데이터 조회
-    const stores = await Store.find({ isActive: true });
-    console.log(`📍 ${stores.length}개 매장 조회 완료`);
+    // 데모 매장들 조회
+    const demoStores = await DemoStore.find({ isActive: true });
+    console.log(`📊 총 ${demoStores.length}개의 데모 매장 발견`);
 
-    if (stores.length < 2) {
-      console.log("⚠️ 추천 관계를 만들기 위해서는 최소 2개 이상의 매장이 필요합니다.");
+    if (demoStores.length === 0) {
+      console.log("❌ 데모 매장이 없습니다. 먼저 데모 매장을 생성해주세요.");
       return;
     }
 
-    // 매장별 ID 매핑
+    // 매장별로 매핑
     const storeMap = new Map();
-    stores.forEach(store => {
-      storeMap.set(store.qrCode.id, store._id);
+    demoStores.forEach((store) => {
+      const qrId = store.qrCode.id;
+      storeMap.set(qrId, store);
     });
 
-    // 추천 관계 데이터 정의
-    const recommendationData = [
-      // 카페 스팟라인 → 다른 장소들
-      {
-        fromQrId: "demo_cafe_001",
-        toQrId: "demo_dessert_001",
-        category: "dessert",
-        priority: 9,
-        distance: 300,
-        walkingTime: 4,
-        description: "커피 후 달콤한 디저트는 어떠세요?",
-        tags: ["디저트", "달콤한", "가까운"]
-      },
-      {
-        fromQrId: "demo_cafe_001",
-        toQrId: "demo_gallery_001",
-        category: "culture",
-        priority: 8,
-        distance: 500,
-        walkingTime: 6,
-        description: "예술 작품을 감상하며 문화적 영감을 얻어보세요",
-        tags: ["예술", "전시", "문화"]
-      },
-      {
-        fromQrId: "demo_cafe_001",
-        toQrId: "demo_bookcafe_001",
-        category: "rest",
-        priority: 7,
-        distance: 2500,
-        walkingTime: 15,
-        description: "홍대의 활기찬 분위기에서 책과 함께하는 시간",
-        tags: ["책", "홍대", "분위기전환"]
-      },
-
-      // 디저트 하우스 → 다른 장소들
-      {
-        fromQrId: "demo_dessert_001",
-        toQrId: "demo_gallery_001",
-        category: "culture",
-        priority: 9,
-        distance: 400,
-        walkingTime: 5,
-        description: "달콤한 시간 후 예술적 감성을 더해보세요",
-        tags: ["예술", "전시", "감성"]
-      },
-      {
-        fromQrId: "demo_dessert_001",
-        toQrId: "demo_cafe_001",
-        category: "rest",
-        priority: 6,
-        distance: 300,
-        walkingTime: 4,
-        description: "조용한 카페에서 여유로운 시간을 보내세요",
-        tags: ["조용한", "휴식", "커피"]
-      },
-      {
-        fromQrId: "demo_dessert_001",
-        toQrId: "demo_bookcafe_001",
-        category: "activity",
-        priority: 7,
-        distance: 2800,
-        walkingTime: 18,
-        description: "홍대로 이동해서 새로운 에너지를 느껴보세요",
-        tags: ["홍대", "활기", "책"]
-      },
-
-      // 아트 갤러리 카페 → 다른 장소들
-      {
-        fromQrId: "demo_gallery_001",
-        toQrId: "demo_bookcafe_001",
-        category: "culture",
-        priority: 8,
-        distance: 2600,
-        walkingTime: 16,
-        description: "예술적 영감을 책으로 이어가보세요",
-        tags: ["책", "문화", "영감"]
-      },
-      {
-        fromQrId: "demo_gallery_001",
-        toQrId: "demo_cafe_001",
-        category: "rest",
-        priority: 7,
-        distance: 500,
-        walkingTime: 6,
-        description: "예술 감상 후 조용한 카페에서 여운을 즐겨보세요",
-        tags: ["휴식", "여운", "조용한"]
-      },
-      {
-        fromQrId: "demo_gallery_001",
-        toQrId: "demo_dessert_001",
-        category: "dessert",
-        priority: 6,
-        distance: 400,
-        walkingTime: 5,
-        description: "문화적 경험을 달콤하게 마무리해보세요",
-        tags: ["디저트", "마무리", "달콤한"]
-      },
-
-      // 홍대 북카페 → 다른 장소들
-      {
-        fromQrId: "demo_bookcafe_001",
-        toQrId: "demo_gallery_001",
-        category: "culture",
-        priority: 8,
-        distance: 2600,
-        walkingTime: 16,
-        description: "책에서 얻은 영감을 예술로 확장해보세요",
-        tags: ["예술", "영감", "확장"]
-      },
-      {
-        fromQrId: "demo_bookcafe_001",
-        toQrId: "demo_cafe_001",
-        category: "activity",
-        priority: 7,
-        distance: 2500,
-        walkingTime: 15,
-        description: "강남으로 이동해서 다른 분위기를 경험해보세요",
-        tags: ["강남", "분위기전환", "이동"]
-      },
-      {
-        fromQrId: "demo_bookcafe_001",
-        toQrId: "demo_dessert_001",
-        category: "next_meal",
-        priority: 6,
-        distance: 2800,
-        walkingTime: 18,
-        description: "독서 후 강남에서 맛있는 디저트를 즐겨보세요",
-        tags: ["디저트", "강남", "맛집"]
-      }
-    ];
-
-    // 추천 데이터 생성
     const recommendations = [];
-    for (const rec of recommendationData) {
-      const fromStoreId = storeMap.get(rec.fromQrId);
-      const toStoreId = storeMap.get(rec.toQrId);
 
-      if (fromStoreId && toStoreId) {
+    // 카페 데모 → 다른 매장들
+    const cafeDemo = storeMap.get("demo_cafe_001");
+    if (cafeDemo) {
+      const galleryDemo = storeMap.get("demo_gallery_001");
+      const restaurantDemo = storeMap.get("demo_restaurant_001");
+      const bookcafeDemo = storeMap.get("demo_bookcafe_001");
+
+      if (galleryDemo) {
         recommendations.push({
-          fromStore: fromStoreId,
-          toStore: toStoreId,
-          category: rec.category,
-          priority: rec.priority,
-          distance: rec.distance,
-          walkingTime: rec.walkingTime,
-          description: rec.description,
-          tags: rec.tags,
-          isActive: true
+          fromStoreId: cafeDemo._id,
+          toStoreId: galleryDemo._id,
+          category: "culture",
+          priority: 8,
+          distance: 250,
+          walkingTime: 5,
+          description: "카페에서 갤러리로 이어지는 문화적 경험",
+        });
+      }
+
+      if (restaurantDemo) {
+        recommendations.push({
+          fromStoreId: cafeDemo._id,
+          toStoreId: restaurantDemo._id,
+          category: "restaurant",
+          priority: 7,
+          distance: 400,
+          walkingTime: 8,
+          description: "커피 후 건강한 식사",
+        });
+      }
+
+      if (bookcafeDemo) {
+        recommendations.push({
+          fromStoreId: cafeDemo._id,
+          toStoreId: bookcafeDemo._id,
+          category: "cafe",
+          priority: 6,
+          distance: 150,
+          walkingTime: 3,
+          description: "카페에서 북카페로 이어지는 독서 시간",
         });
       }
     }
 
-    // 데이터베이스에 저장
-    const createdRecommendations = await Recommendation.insertMany(recommendations);
-    console.log(`✅ ${createdRecommendations.length}개 추천 관계 생성 완료!`);
+    // 갤러리 데모 → 다른 매장들
+    const galleryDemo = storeMap.get("demo_gallery_001");
+    if (galleryDemo) {
+      const cafeDemo = storeMap.get("demo_cafe_001");
+      const restaurantDemo = storeMap.get("demo_restaurant_001");
+      const bookcafeDemo = storeMap.get("demo_bookcafe_001");
 
-    // 매장별 추천 현황 출력
-    console.log("\n📊 매장별 추천 현황:");
-    for (const store of stores) {
-      const outgoingCount = await Recommendation.countDocuments({ fromStore: store._id });
-      const incomingCount = await Recommendation.countDocuments({ toStore: store._id });
-      console.log(`   ${store.name} (${store.qrCode.id})`);
-      console.log(`     → 추천하는 곳: ${outgoingCount}개`);
-      console.log(`     ← 추천받는 곳: ${incomingCount}개`);
+      if (bookcafeDemo) {
+        recommendations.push({
+          fromStoreId: galleryDemo._id,
+          toStoreId: bookcafeDemo._id,
+          category: "cafe",
+          priority: 9,
+          distance: 300,
+          walkingTime: 6,
+          description: "예술 감상 후 독서와 함께하는 시간",
+        });
+      }
+
+      if (cafeDemo) {
+        recommendations.push({
+          fromStoreId: galleryDemo._id,
+          toStoreId: cafeDemo._id,
+          category: "cafe",
+          priority: 7,
+          distance: 250,
+          walkingTime: 5,
+          description: "갤러리에서 카페로 여유로운 시간",
+        });
+      }
+
+      if (restaurantDemo) {
+        recommendations.push({
+          fromStoreId: galleryDemo._id,
+          toStoreId: restaurantDemo._id,
+          category: "restaurant",
+          priority: 6,
+          distance: 500,
+          walkingTime: 10,
+          description: "문화 활동 후 맛있는 식사",
+        });
+      }
     }
 
-    console.log("\n🎉 SpotLine 데모 추천 데이터 생성 완료!");
-    console.log("\n🌐 테스트 URL:");
-    console.log("   - 카페 스팟라인: http://localhost:4000/api/stores/spotline/demo_cafe_001");
-    console.log("   - 디저트 하우스: http://localhost:4000/api/stores/spotline/demo_dessert_001");
-    console.log("   - 아트 갤러리: http://localhost:4000/api/stores/spotline/demo_gallery_001");
-    console.log("   - 홍대 북카페: http://localhost:4000/api/stores/spotline/demo_bookcafe_001");
+    // 레스토랑 데모 → 다른 매장들
+    const restaurantDemo = storeMap.get("demo_restaurant_001");
+    if (restaurantDemo) {
+      const cafeDemo = storeMap.get("demo_cafe_001");
+      const galleryDemo = storeMap.get("demo_gallery_001");
+      const bookcafeDemo = storeMap.get("demo_bookcafe_001");
 
+      if (cafeDemo) {
+        recommendations.push({
+          fromStoreId: restaurantDemo._id,
+          toStoreId: cafeDemo._id,
+          category: "cafe",
+          priority: 8,
+          distance: 400,
+          walkingTime: 8,
+          description: "식사 후 커피와 함께하는 여유",
+        });
+      }
+
+      if (galleryDemo) {
+        recommendations.push({
+          fromStoreId: restaurantDemo._id,
+          toStoreId: galleryDemo._id,
+          category: "culture",
+          priority: 7,
+          distance: 500,
+          walkingTime: 10,
+          description: "식사 후 문화 활동",
+        });
+      }
+
+      if (bookcafeDemo) {
+        recommendations.push({
+          fromStoreId: restaurantDemo._id,
+          toStoreId: bookcafeDemo._id,
+          category: "cafe",
+          priority: 6,
+          distance: 350,
+          walkingTime: 7,
+          description: "식사 후 독서와 함께하는 시간",
+        });
+      }
+    }
+
+    // 북카페 데모 → 다른 매장들
+    const bookcafeDemo = storeMap.get("demo_bookcafe_001");
+    if (bookcafeDemo) {
+      const cafeDemo = storeMap.get("demo_cafe_001");
+      const galleryDemo = storeMap.get("demo_gallery_001");
+      const restaurantDemo = storeMap.get("demo_restaurant_001");
+
+      if (galleryDemo) {
+        recommendations.push({
+          fromStoreId: bookcafeDemo._id,
+          toStoreId: galleryDemo._id,
+          category: "culture",
+          priority: 8,
+          distance: 300,
+          walkingTime: 6,
+          description: "독서 후 예술 감상",
+        });
+      }
+
+      if (cafeDemo) {
+        recommendations.push({
+          fromStoreId: bookcafeDemo._id,
+          toStoreId: cafeDemo._id,
+          category: "cafe",
+          priority: 7,
+          distance: 150,
+          walkingTime: 3,
+          description: "북카페에서 일반 카페로 분위기 전환",
+        });
+      }
+
+      if (restaurantDemo) {
+        recommendations.push({
+          fromStoreId: bookcafeDemo._id,
+          toStoreId: restaurantDemo._id,
+          category: "restaurant",
+          priority: 6,
+          distance: 350,
+          walkingTime: 7,
+          description: "독서 후 건강한 식사",
+        });
+      }
+    }
+
+    // 추천 관계 생성
+    if (recommendations.length > 0) {
+      await DemoRecommendation.insertMany(recommendations);
+      console.log(`✅ ${recommendations.length}개의 데모 추천 관계가 생성되었습니다!`);
+
+      // 생성된 추천 관계 요약
+      console.log("\n📋 생성된 추천 관계 요약:");
+      const groupedRecs = recommendations.reduce((acc: any, rec: any) => {
+        const fromStore = demoStores.find((s) => s._id.equals(rec.fromStoreId));
+        const toStore = demoStores.find((s) => s._id.equals(rec.toStoreId));
+
+        if (fromStore && toStore) {
+          const key = fromStore.name;
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(`${toStore.name} (${rec.walkingTime}분, ${rec.distance}m)`);
+        }
+        return acc;
+      }, {});
+
+      Object.entries(groupedRecs).forEach(([from, tos]: [string, any]) => {
+        console.log(`   ${from} → ${tos.join(", ")}`);
+      });
+    } else {
+      console.log("❌ 생성할 추천 관계가 없습니다.");
+    }
+
+    console.log("\n🎉 데모 추천 관계 생성 완료!");
+  } catch (error) {
+    console.error("❌ 데모 추천 관계 생성 오류:", error);
+  } finally {
     await mongoose.disconnect();
     console.log("📡 MongoDB 연결 종료");
-  } catch (error) {
-    console.error("❌ 오류:", error);
-    process.exit(1);
   }
-};
+}
 
-createDemoRecommendations();
+// 직접 실행 시
+if (require.main === module) {
+  createDemoRecommendations();
+}
+
+export default createDemoRecommendations;

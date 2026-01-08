@@ -10,6 +10,8 @@ process.env.TZ = "Asia/Seoul";
 
 // Routes import
 import storesRouter from "./routes/stores";
+import productionRouter from "./routes/production";
+import qrRouter from "./routes/qr";
 import recommendationsRouter from "./routes/recommendations";
 import analyticsRouter from "./routes/analytics";
 import adminRouter from "./routes/admin";
@@ -65,15 +67,21 @@ mongoose
   .then(() => console.log("MongoDB 연결 성공"))
   .catch((err: Error) => console.error("MongoDB 연결 실패:", err));
 
-// Routes
-app.use("/api/stores", storesRouter);
+// Routes - 새로운 아키텍처 (올바른 구조)
+app.use("/api/demo", demoRouter); // 영업 시연용 데이터 (DemoStore)
+app.use("/api/production", productionRouter); // 실제 운영 데이터 (Store)
+app.use("/api/qr", qrRouter); // QR 코드 관리 (새로운 구조)
+
+// 기존 호환성 유지
+app.use("/api/stores", storesRouter); // 기존 API 호환성 (Store 데이터)
+
+// 기타 API
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/admin/dashboard", dashboardRouter);
 app.use("/api/admin/experience-configs", experienceConfigRouter);
 app.use("/api/experience", experienceRouter);
-app.use("/api/demo", demoRouter);
 app.use("/api/geocoding", geocodingRouter);
 
 // Swagger 문서
@@ -207,7 +215,9 @@ app.get("/", (req: Request, res: Response) => {
             
             <div class="api-info">
                 <h3>🔗 주요 엔드포인트</h3>
-                <div class="endpoint">GET /api/stores - 매장 목록</div>
+                <div class="endpoint">GET /api/demo/stores - 영업 시연용 매장</div>
+                <div class="endpoint">GET /api/production/stores - 실제 운영 매장</div>
+                <div class="endpoint">GET /api/stores - 기존 호환성 (실제 운영)</div>
                 <div class="endpoint">GET /api/recommendations - 추천 목록</div>
                 <div class="endpoint">GET /api/analytics - 분석 데이터</div>
                 <div class="endpoint">POST /api/admin/login - 관리자 로그인</div>
@@ -247,8 +257,27 @@ app.get("/api", (req: Request, res: Response) => {
     name: "Spotline API",
     version: "2.0.0-ts",
     description: "QR 기반 로컬 연결 서비스 (TypeScript)",
+    architecture: {
+      demo: {
+        description: "영업 시연용 데이터 (업주 소개용)",
+        endpoint: "/api/demo",
+        purpose: "고객사 방문 시 서비스 시연",
+      },
+      production: {
+        description: "실제 운영 데이터 (고객 데이터)",
+        endpoint: "/api/production",
+        purpose: "실제 고객 매장 운영",
+      },
+      legacy: {
+        description: "기존 호환성 유지",
+        endpoint: "/api/stores",
+        redirectsTo: "/api/production",
+      },
+    },
     endpoints: {
-      stores: "/api/stores",
+      demo: "/api/demo",
+      production: "/api/production",
+      stores: "/api/stores", // 호환성 유지
       recommendations: "/api/recommendations",
       analytics: "/api/analytics",
       admin: "/api/admin",

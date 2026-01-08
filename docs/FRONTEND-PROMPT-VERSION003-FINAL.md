@@ -1,8 +1,9 @@
-# SpotLine 프론트엔드 개발 가이드 VERSION003-FINAL
+# SpotLine 프론트엔드 구현 가이드 - VERSION003 FINAL
 
-## 📌 SpotLine 정체성 (중요 - 반드시 준수)
+## 📋 개요
 
-SpotLine은:
+SpotLine 백엔드 API와 완전히 호환되는 프론트엔드 구현을 위한 최종 가이드입니다.
+모든 A
 
 - **광고 플랫폼이 아닙니다**
 - **리뷰 서비스가 아닙니다**

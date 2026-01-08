@@ -7,7 +7,7 @@ const router: Router = express.Router();
  * @swagger
  * tags:
  *   name: Stores
- *   description: 매장 관리 API
+ *   description: 매장 관리 API (호환성 유지 - 실제로는 Production API와 동일)
  */
 
 /**
@@ -138,6 +138,86 @@ router.get("/qr/:qrId", storeController.getStoreByQR);
  *                               type: string
  *                         spotlineStory:
  *                           type: string
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+/**
+ * @swagger
+ * /api/stores/spotline/{storeId}:
+ *   get:
+ *     summary: SpotLine 매장 상세 조회 (매장 ID 기반)
+ *     tags: [Stores]
+ *     description: 매장 ID로 SpotLine 정체성에 맞는 매장 정보 제공 (새로운 구조)
+ *     parameters:
+ *       - in: path
+ *         name: storeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 매장 ID
+ *       - in: query
+ *         name: qr
+ *         schema:
+ *           type: string
+ *         description: QR 코드 ID (선택적)
+ *     responses:
+ *       200:
+ *         description: SpotLine 매장 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         shortDescription:
+ *                           type: string
+ *                         representativeImage:
+ *                           type: string
+ *                         location:
+ *                           type: object
+ *                           properties:
+ *                             address:
+ *                               type: string
+ *                             mapLink:
+ *                               type: string
+ *                         externalLinks:
+ *                           type: object
+ *                         spotlineStory:
+ *                           type: string
+ *                         nextSpots:
+ *                           type: array
+ *                         qrCode:
+ *                           type: object
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+router.get("/spotline/store/:storeId", storeController.getSpotlineStoreById);
+
+/**
+ * @swagger
+ * /api/stores/spotline/{qrId}:
+ *   get:
+ *     summary: SpotLine QR 스캔 전용 매장 조회 (호환성 유지)
+ *     tags: [Stores]
+ *     description: SpotLine 정체성에 맞는 간소화된 매장 정보 제공 (기존 구조)
+ *     parameters:
+ *       - in: path
+ *         name: qrId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: QR 코드 ID
+ *     responses:
+ *       200:
+ *         description: SpotLine 매장 조회 성공
  *       404:
  *         description: 매장을 찾을 수 없음
  */

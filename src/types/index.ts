@@ -44,6 +44,11 @@ export interface IStore extends Document {
   description?: string;
   tags?: string[];
   images?: string[];
+
+  // QR 코드 연결 (역참조) - 새로운 구조
+  qrCodes?: Types.ObjectId[];
+
+  // 기존 QR 코드 필드 (호환성 유지, 향후 제거 예정)
   qrCode: {
     id: string;
     isActive: boolean;
