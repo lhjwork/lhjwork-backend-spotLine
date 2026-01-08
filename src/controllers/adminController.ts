@@ -137,6 +137,98 @@ export const createAdmin = async (req: Request<{}, {}, CreateAdminRequest>, res:
   }
 };
 
+// 관리자 목록 조회
+export const getAdminList = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.admin) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json(formatResponse(false, "인증이 필요합니다.", null, HTTP_STATUS.UNAUTHORIZED));
+      return;
+    }
+
+    // super_admin만 관리자 목록 조회 가능
+    const currentAdmin = await Admin.findById(req.admin.adminId);
+    if (!currentAdmin || currentAdmin.role !== "super_admin") {
+      res.status(HTTP_STATUS.FORBIDDEN).json(formatResponse(false, "권한이 없습니다.", null, HTTP_STATUS.FORBIDDEN));
+      return;
+    }
+
+    const { page = 1, limit = 20, role, isActive } = req.query;
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+
+    // 필터 조건 구성
+    const filter: any = {};
+    if (role) filter.role = role;
+    if (isActive !== undefined) filter.isActive = isActive === "true";
+
+    const admins = await Admin.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
+
+    const total = await Admin.countDocuments(filter);
+
+    res.json(
+      formatResponse(true, "관리자 목록 조회 성공", {
+        admins,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
+      })
+    );
+  } catch (error) {
+    console.error("Get admin list error:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, "서버 오류가 발생했습니다.", null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
+  }
+};
+
+// 관리자 권한 업데이트
+export const updatePermissions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.admin) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json(formatResponse(false, "인증이 필요합니다.", null, HTTP_STATUS.UNAUTHORIZED));
+      return;
+    }
+
+    // super_admin만 권한 변경 가능
+    const currentAdmin = await Admin.findById(req.admin.adminId);
+    if (!currentAdmin || currentAdmin.role !== "super_admin") {
+      res.status(HTTP_STATUS.FORBIDDEN).json(formatResponse(false, "권한이 없습니다.", null, HTTP_STATUS.FORBIDDEN));
+      return;
+    }
+
+    const { adminId } = req.params;
+    const { role, isActive } = req.body;
+
+    // 자기 자신의 권한은 변경할 수 없음
+    if (adminId === req.admin.adminId) {
+      res.status(HTTP_STATUS.BAD_REQUEST).json(formatResponse(false, "자신의 권한은 변경할 수 없습니다.", null, HTTP_STATUS.BAD_REQUEST));
+      return;
+    }
+
+    const updateData: any = {};
+    if (role) updateData.role = role;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    updateData.updatedAt = new Date();
+
+    const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateData, { new: true }).select("-password");
+
+    if (!updatedAdmin) {
+      res.status(HTTP_STATUS.NOT_FOUND).json(formatResponse(false, "관리자를 찾을 수 없습니다.", null, HTTP_STATUS.NOT_FOUND));
+      return;
+    }
+
+    res.json(formatResponse(true, "관리자 권한이 업데이트되었습니다.", updatedAdmin));
+  } catch (error) {
+    console.error("Update permissions error:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(formatResponse(false, "서버 오류가 발생했습니다.", null, HTTP_STATUS.INTERNAL_SERVER_ERROR));
+  }
+};
+
 // 토큰 검증
 export const verifyToken = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {

@@ -17,6 +17,12 @@ const adminSchema = new Schema<IAdmin>({
     unique: true,
     trim: true,
     lowercase: true,
+    validate: {
+      validator: function (email: string) {
+        return email.endsWith("@spotline.co.kr") || email.endsWith("@spotline.com");
+      },
+      message: "Email must be from @spotline.co.kr or @spotline.com domain",
+    },
   },
   password: {
     type: String,

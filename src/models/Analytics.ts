@@ -15,6 +15,12 @@ const analyticsSchema = new Schema<IAnalytics>({
   eventType: {
     type: String,
     enum: [
+      "qr_scan", // QR 코드 스캔
+      "page_view", // 페이지 조회
+      "recommendation_click", // 추천 클릭
+      "map_click", // 지도 클릭
+      "store_visit", // 매장 방문
+      // 기존 호환성 유지
       "page_enter", // 페이지 진입
       "spot_click", // spot 클릭
       "map_link_click", // 지도 링크 클릭

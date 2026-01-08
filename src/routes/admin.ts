@@ -160,7 +160,85 @@ router.post("/create", adminController.createAdmin);
  *       401:
  *         description: 토큰 무효
  */
+/**
+ * @swagger
+ * /api/admin/list:
+ *   get:
+ *     summary: 관리자 목록 조회 (super_admin만 가능)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: 페이지당 결과 수
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [admin, super_admin]
+ *         description: 역할 필터
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: 활성화 상태 필터
+ *     responses:
+ *       200:
+ *         description: 관리자 목록 조회 성공
+ *       403:
+ *         description: 권한 없음
+ */
 router.get("/verify", authenticateAdmin, adminController.verifyToken);
+
+router.get("/list", authenticateAdmin, adminController.getAdminList);
+
+/**
+ * @swagger
+ * /api/admin/{adminId}/permissions:
+ *   patch:
+ *     summary: 관리자 권한 업데이트 (super_admin만 가능)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: adminId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 관리자 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [admin, super_admin]
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: 권한 업데이트 성공
+ *       403:
+ *         description: 권한 없음
+ *       404:
+ *         description: 관리자를 찾을 수 없음
+ */
+router.patch("/:adminId/permissions", authenticateAdmin, adminController.updatePermissions);
 
 // 관리자용 매장 관리 API
 /**

@@ -13,6 +13,7 @@ import storesRouter from "./routes/stores";
 import recommendationsRouter from "./routes/recommendations";
 import analyticsRouter from "./routes/analytics";
 import adminRouter from "./routes/admin";
+import dashboardRouter from "./routes/dashboard";
 import geocodingRouter from "./routes/geocoding";
 import experienceConfigRouter from "./routes/experienceConfig";
 import experienceRouter from "./routes/experience";
@@ -28,40 +29,33 @@ app.use(
   cors({
     origin: [
       // Local development
-      "http://localhost:3000", 
-      "http://localhost:3001", 
-      "http://localhost:3002", 
-      "http://localhost:3003", 
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+      "http://localhost:3003",
       "http://localhost:4000",
       "http://localhost:5173",
       // Production domains
       "https://front-spot-line.vercel.app",
       "https://admin-spotline.vercel.app",
-      "https://lhjwork-backend-spotline.onrender.com"
+      "https://lhjwork-backend-spotline.onrender.com",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: [
-      "Content-Type", 
-      "Authorization", 
-      "x-session-id",
-      "Accept",
-      "Origin",
-      "X-Requested-With"
-    ],
+    allowedHeaders: ["Content-Type", "Authorization", "x-session-id", "Accept", "Origin", "X-Requested-With"],
     preflightContinue: false,
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Handle preflight requests explicitly
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-session-id,Accept,Origin,X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization,x-session-id,Accept,Origin,X-Requested-With");
+  res.header("Access-Control-Allow-Credentials", "true");
   res.sendStatus(200);
 });
 
@@ -76,6 +70,7 @@ app.use("/api/stores", storesRouter);
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/admin/dashboard", dashboardRouter);
 app.use("/api/admin/experience-configs", experienceConfigRouter);
 app.use("/api/experience", experienceRouter);
 app.use("/api/demo", demoRouter);
