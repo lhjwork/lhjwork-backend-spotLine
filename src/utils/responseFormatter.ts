@@ -75,11 +75,18 @@ class ResponseFormatter {
 }
 
 // 간단한 응답 포맷 함수들
-export const formatResponse = <T>(success: boolean, message: string, data?: T, status?: number): ApiResponse<T> => ({
+export const formatResponse = <T>(
+  success: boolean, 
+  message: string, 
+  data?: T, 
+  status?: number, 
+  meta?: Record<string, any>
+): ApiResponse<T> & { meta?: Record<string, any> } => ({
   success,
   message,
   data,
   status,
+  ...(meta && { meta }),
 });
 
 export default ResponseFormatter;

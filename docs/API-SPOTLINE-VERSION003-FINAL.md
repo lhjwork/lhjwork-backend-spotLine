@@ -56,6 +56,113 @@ Authorization: Bearer {token}
 
 ---
 
+## 🎮 Demo API V2.0 (백엔드 연동)
+
+SpotLine 데모 시스템 V2.0은 백엔드 API와 연동하여 데이터를 별도로 관리하는 구조로 개선되었습니다.
+
+### 1. 데모 매장 및 근처 Spot 조회
+
+```http
+GET /api/demo/store
+```
+
+**응답**:
+
+```json
+{
+  "success": true,
+  "message": "데모 데이터를 성공적으로 가져왔습니다.",
+  "data": {
+    "store": {
+      "id": "demo-store",
+      "name": "아늑한 카페 스토리",
+      "shortDescription": "따뜻한 분위기의 동네 카페",
+      "representativeImage": "/demo/cafe-001.jpg",
+      "category": "cafe",
+      "location": {
+        "address": "서울시 강남구 테헤란로 123",
+        "coordinates": [127.0276, 37.4979]
+      },
+      "qrCode": {
+        "id": "demo_cafe_001",
+        "isActive": true
+      },
+      "spotlineStory": {
+        "title": "커피 한 잔의 여유",
+        "content": "바쁜 일상 속에서 잠시 멈춰 서서...",
+        "tags": ["커피", "휴식", "분위기", "수제디저트"]
+      },
+      "externalLinks": [
+        {
+          "type": "instagram",
+          "url": "https://instagram.com/demo_cafe",
+          "title": "인스타그램"
+        }
+      ],
+      "demoNotice": "이것은 SpotLine 서비스 소개용 데모입니다."
+    },
+    "nextSpots": [
+      {
+        "id": "demo_bakery_001",
+        "name": "달콤한 베이커리",
+        "shortDescription": "갓 구운 빵의 향기",
+        "representativeImage": "/demo/bakery-001.jpg",
+        "category": "bakery",
+        "distance": 150,
+        "walkingTime": 2,
+        "spotlineStory": {
+          "title": "갓 구운 빵의 행복",
+          "content": "매일 새벽부터 정성스럽게 구워내는 빵들이 여러분을 기다립니다."
+        }
+      }
+      // ... 총 4개의 nextSpots
+    ]
+  },
+  "meta": {
+    "isDemo": true,
+    "scenario": "cafe",
+    "timestamp": "2024-01-08T10:30:00.000Z"
+  }
+}
+```
+
+### 2. 데모 시스템 상태 확인
+
+```http
+GET /api/demo/health
+```
+
+**응답**:
+
+```json
+{
+  "success": true,
+  "message": "데모 시스템이 정상 작동 중입니다.",
+  "data": {
+    "status": "healthy",
+    "version": "2.0",
+    "dataVersion": "cafe-v1",
+    "lastUpdated": "2024-01-08T10:00:00.000Z"
+  },
+  "meta": {
+    "isDemo": true,
+    "scenario": "cafe",
+    "timestamp": "2024-01-08T10:30:00.000Z"
+  }
+}
+```
+
+### V2.0 특징
+
+- ✅ **백엔드 API 연동**: 프론트엔드에서 API 호출로 데이터 획득
+- ✅ **중앙 집중식 데이터 관리**: `/src/data/demo.ts`에서 데이터 관리
+- ✅ **로딩 시뮬레이션**: 실제 DB 조회와 유사한 500ms 로딩
+- ✅ **확장 가능한 구조**: 다양한 데모 시나리오 지원 가능
+- ✅ **완전한 에러 처리**: 안정적인 에러 응답
+- ✅ **메타데이터 지원**: 데모 식별 및 추적 정보 제공
+
+---
+
 ## 🏪 매장 관리 API
 
 ### 1. 매장 목록 조회
@@ -521,26 +628,6 @@ GET /api/geocoding/google?address={address}
 ```
 
 ---
-
-## 🎮 Demo API (데모 시스템)
-
-### 1. 데모 매장 목록
-
-```http
-GET /api/demo/stores
-```
-
-### 2. 데모 매장 상세
-
-```http
-GET /api/demo/stores/{qrId}
-```
-
-### 3. 데모 추천 목록
-
-```http
-GET /api/demo/recommendations?fromQrId={qrId}
-```
 
 ---
 

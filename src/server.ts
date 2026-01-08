@@ -29,19 +29,31 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(
   cors({
-    origin: [
-      // Local development
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3002",
-      "http://localhost:3003",
-      "http://localhost:4000",
-      "http://localhost:5173",
-      // Production domains
-      "https://front-spot-line.vercel.app",
-      "https://admin-spotline.vercel.app",
-      "https://lhjwork-backend-spotline.onrender.com",
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        // Local development
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:3003",
+        "http://localhost:4000",
+        "http://localhost:5173",
+        // Production domains
+        "https://front-spot-line.vercel.app",
+        "https://admin-spotline.vercel.app",
+        "https://lhjwork-backend-spotline.onrender.com",
+      ];
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log(`CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "x-session-id", "Accept", "Origin", "X-Requested-With"],
@@ -54,10 +66,27 @@ app.use(express.urlencoded({ extended: true }));
 
 // Handle preflight requests explicitly
 app.options("*", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH");
-  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization,x-session-id,Accept,Origin,X-Requested-With");
-  res.header("Access-Control-Allow-Credentials", "true");
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001", 
+    "http://localhost:3002",
+    "http://localhost:3003",
+    "http://localhost:4000",
+    "http://localhost:5173",
+    "https://front-spot-line.vercel.app",
+    "https://admin-spotline.vercel.app",
+    "https://lhjwork-backend-spotline.onrender.com",
+  ];
+  
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin || "*");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH");
+    res.header("Access-Control-Allow-Headers", "Content-Type,Authorization,x-session-id,Accept,Origin,X-Requested-With");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Max-Age", "86400"); // 24 hours
+  }
+  
   res.sendStatus(200);
 });
 
@@ -67,8 +96,22 @@ mongoose
   .then(() => console.log("MongoDB 연결 성공"))
   .catch((err: Error) => console.error("MongoDB 연결 실패:", err));
 
+// Add CORS debugging middleware
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${origin || 'none'}`);
+  next();
+});
+
+// Handle double /api/ paths (frontend misconfiguration)
+app.use("/api/api/*", (req, res, next) => {
+  const correctedPath = req.originalUrl.replace("/api/api/", "/api/");
+  console.log(`Redirecting double API path: ${req.originalUrl} → ${correctedPath}`);
+  return res.redirect(301, correctedPath);
+});
+
 // Routes - 새로운 아키텍처 (올바른 구조)
-app.use("/api/demo", demoRouter); // 영업 시연용 데이터 (DemoStore)
+app.use("/api/demo", demoRouter); // 데모 시스템 V2.0 (백엔드 API 연동)
 app.use("/api/production", productionRouter); // 실제 운영 데이터 (Store)
 app.use("/api/qr", qrRouter); // QR 코드 관리 (새로운 구조)
 
@@ -215,9 +258,8 @@ app.get("/", (req: Request, res: Response) => {
             
             <div class="api-info">
                 <h3>🔗 주요 엔드포인트</h3>
-                <div class="endpoint">GET /api/demo/stores - 영업 시연용 매장</div>
-                <div class="endpoint">GET /api/production/stores - 실제 운영 매장</div>
-                <div class="endpoint">GET /api/stores - 기존 호환성 (실제 운영)</div>
+                <div class="endpoint">GET /api/demo/store - 데모 시스템 V2.0</div>
+                <div class="endpoint">GET /api/stores - 매장 목록</div>
                 <div class="endpoint">GET /api/recommendations - 추천 목록</div>
                 <div class="endpoint">GET /api/analytics - 분석 데이터</div>
                 <div class="endpoint">POST /api/admin/login - 관리자 로그인</div>
@@ -259,25 +301,25 @@ app.get("/api", (req: Request, res: Response) => {
     description: "QR 기반 로컬 연결 서비스 (TypeScript)",
     architecture: {
       demo: {
-        description: "영업 시연용 데이터 (업주 소개용)",
+        description: "데모 시스템 V2.0 (백엔드 API 연동)",
         endpoint: "/api/demo",
-        purpose: "고객사 방문 시 서비스 시연",
+        purpose: "업주 소개용 데모 (API 기반 데이터 관리)",
       },
-      production: {
-        description: "실제 운영 데이터 (고객 데이터)",
-        endpoint: "/api/production",
-        purpose: "실제 고객 매장 운영",
+      stores: {
+        description: "매장 데이터 관리",
+        endpoint: "/api/stores",
+        purpose: "매장 정보 조회 및 관리",
       },
       legacy: {
         description: "기존 호환성 유지",
-        endpoint: "/api/stores",
-        redirectsTo: "/api/production",
+        endpoint: "/api/production",
+        redirectsTo: "/api/stores",
       },
     },
     endpoints: {
       demo: "/api/demo",
-      production: "/api/production",
-      stores: "/api/stores", // 호환성 유지
+      stores: "/api/stores",
+      production: "/api/production", // 호환성 유지
       recommendations: "/api/recommendations",
       analytics: "/api/analytics",
       admin: "/api/admin",

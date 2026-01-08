@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import QRCode from "../models/QRCode";
 import Store from "../models/Store";
-import DemoStore from "../models/DemoStore";
 import { formatResponse } from "../utils/responseFormatter";
 import { HTTP_STATUS } from "../utils/constants";
 
@@ -10,34 +9,7 @@ export const getStoreByQRCode = async (req: Request<{ qrId: string }>, res: Resp
   try {
     const { qrId } = req.params;
 
-    // 데모 QR 코드인지 확인 (demo_ 접두사로 시작하는지)
-    const isDemoQR = qrId.startsWith("demo_");
-
-    if (isDemoQR) {
-      // 데모 QR 코드 처리 - DemoStore 컬렉션에서 직접 조회
-      const demoStore = await DemoStore.findOne({
-        "qrCode.id": qrId,
-        "qrCode.isActive": true,
-        isActive: true,
-      });
-
-      if (!demoStore) {
-        res.status(HTTP_STATUS.NOT_FOUND).json(formatResponse(false, "유효하지 않거나 비활성화된 데모 QR 코드입니다.", null, HTTP_STATUS.NOT_FOUND));
-        return;
-      }
-
-      res.json(
-        formatResponse(true, "데모 QR 코드 조회 성공", {
-          qrId: demoStore.qrCode.id,
-          storeId: demoStore._id.toString(),
-          storeName: demoStore.name,
-          isDemo: true,
-        })
-      );
-      return;
-    }
-
-    // 프로덕션 QR 코드 처리 - QRCode 컬렉션에서 조회
+    // QRCode 컬렉션에서 조회
     const qrCode = await QRCode.findActiveByQrId(qrId);
 
     if (!qrCode) {
@@ -61,7 +33,6 @@ export const getStoreByQRCode = async (req: Request<{ qrId: string }>, res: Resp
         storeId: store._id.toString(),
         storeName: store.name,
         scanCount: qrCode.scanCount,
-        isDemo: false,
       })
     );
   } catch (error) {

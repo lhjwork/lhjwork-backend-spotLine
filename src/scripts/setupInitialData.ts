@@ -48,14 +48,14 @@ const setupInitialData = async () => {
     console.log("   - 비밀번호: 12341234");
     console.log("   - 권한: super_admin");
 
-    // 2. 데모 매장 데이터 생성
-    console.log("\n🏪 데모 매장 데이터 생성 중...");
+    // 2. 초기 매장 데이터 생성
+    console.log("\n🏪 초기 매장 데이터 생성 중...");
 
     // 기존 매장 데이터 삭제 (전체 초기화)
     await Store.deleteMany({});
     console.log("🗑️ 기존 매장 데이터 삭제 완료");
 
-    const demoStores = [
+    const initialStores = [
       {
         name: "카페 스팟라인",
         category: "cafe",
@@ -222,8 +222,8 @@ const setupInitialData = async () => {
     ];
 
     // 매장 데이터 생성
-    const createdStores = await Store.insertMany(demoStores);
-    console.log(`✅ ${createdStores.length}개 데모 매장 생성 완료!`);
+    const createdStores = await Store.insertMany(initialStores);
+    console.log(`✅ ${createdStores.length}개 초기 매장 생성 완료!`);
 
     console.log("\n🎉 SpotLine 초기 데이터 설정 완료!");
     
@@ -240,7 +240,6 @@ const setupInitialData = async () => {
     console.log("\n🌐 테스트 URL:");
     console.log("   - 체험하기: http://localhost:4000/api/experience");
     console.log("   - 매장 목록: http://localhost:4000/api/stores");
-    console.log("   - 카페 스팟라인: http://localhost:4000/api/stores/spotline/demo_cafe_001");
     console.log("   - API 문서: http://localhost:4000/api-docs");
 
     await mongoose.disconnect();

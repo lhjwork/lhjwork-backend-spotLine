@@ -7,19 +7,19 @@ const router: Router = express.Router();
  * @swagger
  * tags:
  *   name: Demo
- *   description: 데모 시스템 API (업주 소개용)
+ *   description: 데모 시스템 API V2.0 (백엔드 연동)
  */
 
 /**
  * @swagger
- * /api/demo/experience:
+ * /api/demo/store:
  *   get:
- *     summary: 랜덤 데모 체험
+ *     summary: 데모 매장 및 근처 Spot 조회
  *     tags: [Demo]
- *     description: 랜덤하게 데모 매장을 선택하여 체험할 수 있도록 합니다
+ *     description: SpotLine 데모 시스템의 메인 API. 데모 매장 정보와 4개의 근처 추천 Spot을 반환합니다.
  *     responses:
  *       200:
- *         description: 데모 체험 매장 선택 성공
+ *         description: 데모 데이터 조회 성공
  *         content:
  *           application/json:
  *             schema:
@@ -30,39 +30,138 @@ const router: Router = express.Router();
  *                     data:
  *                       type: object
  *                       properties:
- *                         qrId:
- *                           type: string
- *                           example: "demo_cafe_001"
- *                         storeId:
- *                           type: string
- *                           example: "675a1b2c3d4e5f6789012346"
- *                         storeName:
- *                           type: string
- *                           example: "카페 데모"
- *                         area:
- *                           type: string
- *                           example: "데모 지역"
- *                         redirectUrl:
- *                           type: string
- *                           example: "http://localhost:3000/spotline/675a1b2c3d4e5f6789012346"
- *                         isDemoMode:
+ *                         store:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: string
+ *                               example: "demo-store"
+ *                             name:
+ *                               type: string
+ *                               example: "아늑한 카페 스토리"
+ *                             shortDescription:
+ *                               type: string
+ *                               example: "따뜻한 분위기의 동네 카페"
+ *                             representativeImage:
+ *                               type: string
+ *                               example: "/demo/cafe-001.jpg"
+ *                             category:
+ *                               type: string
+ *                               example: "cafe"
+ *                             location:
+ *                               type: object
+ *                               properties:
+ *                                 address:
+ *                                   type: string
+ *                                   example: "서울시 강남구 테헤란로 123"
+ *                                 coordinates:
+ *                                   type: array
+ *                                   items:
+ *                                     type: number
+ *                                   example: [127.0276, 37.4979]
+ *                             qrCode:
+ *                               type: object
+ *                               properties:
+ *                                 id:
+ *                                   type: string
+ *                                   example: "demo_cafe_001"
+ *                                 isActive:
+ *                                   type: boolean
+ *                                   example: true
+ *                             spotlineStory:
+ *                               type: object
+ *                               properties:
+ *                                 title:
+ *                                   type: string
+ *                                   example: "커피 한 잔의 여유"
+ *                                 content:
+ *                                   type: string
+ *                                   example: "바쁜 일상 속에서 잠시 멈춰 서서..."
+ *                                 tags:
+ *                                   type: array
+ *                                   items:
+ *                                     type: string
+ *                                   example: ["커피", "휴식", "분위기", "수제디저트"]
+ *                             externalLinks:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   type:
+ *                                     type: string
+ *                                     example: "instagram"
+ *                                   url:
+ *                                     type: string
+ *                                     example: "https://instagram.com/demo_cafe"
+ *                                   title:
+ *                                     type: string
+ *                                     example: "인스타그램"
+ *                             demoNotice:
+ *                               type: string
+ *                               example: "이것은 SpotLine 서비스 소개용 데모입니다."
+ *                         nextSpots:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                                 example: "demo_bakery_001"
+ *                               name:
+ *                                 type: string
+ *                                 example: "달콤한 베이커리"
+ *                               shortDescription:
+ *                                 type: string
+ *                                 example: "갓 구운 빵의 향기"
+ *                               representativeImage:
+ *                                 type: string
+ *                                 example: "/demo/bakery-001.jpg"
+ *                               category:
+ *                                 type: string
+ *                                 example: "bakery"
+ *                               distance:
+ *                                 type: number
+ *                                 example: 150
+ *                               walkingTime:
+ *                                 type: number
+ *                                 example: 2
+ *                               spotlineStory:
+ *                                 type: object
+ *                                 properties:
+ *                                   title:
+ *                                     type: string
+ *                                     example: "갓 구운 빵의 행복"
+ *                                   content:
+ *                                     type: string
+ *                                     example: "매일 새벽부터 정성스럽게..."
+ *                     meta:
+ *                       type: object
+ *                       properties:
+ *                         isDemo:
  *                           type: boolean
  *                           example: true
- *       404:
- *         description: 사용 가능한 데모 매장이 없음
+ *                         scenario:
+ *                           type: string
+ *                           example: "cafe"
+ *                         timestamp:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2024-01-08T10:30:00.000Z"
+ *       500:
+ *         description: 서버 오류
  */
-router.get("/experience", demoController.getDemoExperience);
+router.get("/store", demoController.getDemoStore);
 
 /**
  * @swagger
- * /api/demo/stores:
+ * /api/demo/health:
  *   get:
- *     summary: 데모 매장 목록 조회
+ *     summary: 데모 시스템 상태 확인
  *     tags: [Demo]
- *     description: 모든 데모 매장 목록을 반환합니다
+ *     description: 데모 시스템의 상태와 버전 정보를 확인합니다.
  *     responses:
  *       200:
- *         description: 데모 매장 목록 조회 성공
+ *         description: 데모 시스템 상태 확인 성공
  *         content:
  *           application/json:
  *             schema:
@@ -71,138 +170,24 @@ router.get("/experience", demoController.getDemoExperience);
  *                 - type: object
  *                   properties:
  *                     data:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                           name:
- *                             type: string
- *                           shortDescription:
- *                             type: string
- *                           representativeImage:
- *                             type: string
- *                           location:
- *                             type: object
- *                           externalLinks:
- *                             type: object
- *                           spotlineStory:
- *                             type: string
- *                           qrCode:
- *                             type: object
- *                           isDemoMode:
- *                             type: boolean
- *                           demoNotice:
- *                             type: string
+ *                       type: object
+ *                       properties:
+ *                         status:
+ *                           type: string
+ *                           example: "healthy"
+ *                         version:
+ *                           type: string
+ *                           example: "2.0"
+ *                         dataVersion:
+ *                           type: string
+ *                           example: "cafe-v1"
+ *                         lastUpdated:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2024-01-08T10:00:00.000Z"
+ *       500:
+ *         description: 서버 오류
  */
-router.get("/stores", demoController.getDemoStores);
-
-/**
- * @swagger
- * /api/demo/stores/{qrId}:
- *   get:
- *     summary: 데모 매장 상세 조회 (QR ID)
- *     tags: [Demo]
- *     description: QR ID로 특정 데모 매장의 상세 정보를 조회합니다
- *     parameters:
- *       - in: path
- *         name: qrId
- *         required: true
- *         schema:
- *           type: string
- *           example: "demo_cafe_001"
- *         description: 데모 QR 코드 ID
- *     responses:
- *       200:
- *         description: 데모 매장 조회 성공
- *       400:
- *         description: 유효하지 않은 데모 QR 코드
- *       404:
- *         description: 데모 매장을 찾을 수 없음
- */
-router.get("/stores/:qrId", demoController.getDemoStoreByQR);
-
-/**
- * @swagger
- * /api/demo/stores/id/{storeId}:
- *   get:
- *     summary: 데모 매장 상세 조회 (매장 ID)
- *     tags: [Demo]
- *     description: 매장 ID로 특정 데모 매장의 상세 정보를 조회합니다
- *     parameters:
- *       - in: path
- *         name: storeId
- *         required: true
- *         schema:
- *           type: string
- *           example: "675a1b2c3d4e5f6789012346"
- *         description: 데모 매장 ID
- *     responses:
- *       200:
- *         description: 데모 매장 조회 성공
- *       400:
- *         description: 유효하지 않은 매장 ID
- *       404:
- *         description: 데모 매장을 찾을 수 없음
- */
-router.get("/stores/id/:storeId", demoController.getDemoStoreById);
-
-/**
- * @swagger
- * /api/demo/next-spots/{storeId}:
- *   get:
- *     summary: 데모 다음 Spot 조회
- *     tags: [Demo]
- *     description: 데모 매장의 다음 추천 Spot들을 조회합니다
- *     parameters:
- *       - in: path
- *         name: storeId
- *         required: true
- *         schema:
- *           type: string
- *           example: "675a1b2c3d4e5f6789012346"
- *         description: 데모 매장 ID
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 4
- *         description: 결과 개수 제한
- *     responses:
- *       200:
- *         description: 데모 다음 Spot 조회 성공
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/ApiResponse'
- *                 - type: object
- *                   properties:
- *                     data:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                           name:
- *                             type: string
- *                           shortDescription:
- *                             type: string
- *                           representativeImage:
- *                             type: string
- *                           mapLink:
- *                             type: string
- *                           category:
- *                             type: string
- *                           walkingTime:
- *                             type: number
- *                           distance:
- *                             type: number
- *       400:
- *         description: 유효하지 않은 매장 ID
- */
-router.get("/next-spots/:storeId", demoController.getDemoNextSpots);
+router.get("/health", demoController.getDemoHealth);
 
 export default router;
