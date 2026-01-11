@@ -1,0 +1,16 @@
+{
+  "admins": [
+    {
+      "_id": "695e539458b2929f55f353e1",
+      "username": "spotline-admin",
+      "password": "$2b$10$8WLQFPN5Bqc6eMaCfmNLm.9.Kw3IbqGsY6E9WnVZD.WnOufnthHGW",
+      "role": "super_admin",
+      "name": "SpotLine 관리자",
+      "email": "admin@spotline.co.kr",
+      "isActive": true,
+      "createdAt": "2026-01-07T12:37:40.368Z",
+      "updatedAt": "2026-01-07T12:37:40.368Z",
+      "lastLogin": "2026-01-08T15:45:11.464Z"
+    }
+  ]
+}

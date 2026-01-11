@@ -15,8 +15,11 @@ export const login = async (req: Request<{}, {}, LoginRequest>, res: Response): 
   try {
     const { username, password } = req.body;
 
+    console.log("🔐 로그인 시도:", { username, passwordLength: password?.length });
+
     // 입력 검증
     if (!username || !password) {
+      console.log("❌ 입력 검증 실패: 사용자명 또는 비밀번호 누락");
       res.status(HTTP_STATUS.BAD_REQUEST).json(formatResponse(false, "사용자명과 비밀번호를 입력해주세요.", null, HTTP_STATUS.BAD_REQUEST));
       return;
     }
@@ -27,14 +30,21 @@ export const login = async (req: Request<{}, {}, LoginRequest>, res: Response): 
       isActive: true,
     });
 
+    console.log("👤 관리자 조회 결과:", admin ? { id: admin._id, username: admin.username, email: admin.email, isActive: admin.isActive } : "없음");
+
     if (!admin) {
+      console.log("❌ 관리자를 찾을 수 없음");
       res.status(HTTP_STATUS.UNAUTHORIZED).json(formatResponse(false, "잘못된 로그인 정보입니다.", null, HTTP_STATUS.UNAUTHORIZED));
       return;
     }
 
     // 비밀번호 검증
+    console.log("🔑 비밀번호 검증 시작...");
     const isPasswordValid = await admin.comparePassword(password);
+    console.log("🔑 비밀번호 검증 결과:", isPasswordValid);
+
     if (!isPasswordValid) {
+      console.log("❌ 비밀번호 불일치");
       res.status(HTTP_STATUS.UNAUTHORIZED).json(formatResponse(false, "잘못된 로그인 정보입니다.", null, HTTP_STATUS.UNAUTHORIZED));
       return;
     }
@@ -54,6 +64,8 @@ export const login = async (req: Request<{}, {}, LoginRequest>, res: Response): 
       role: admin.role,
       lastLogin: admin.lastLogin,
     };
+
+    console.log("✅ 로그인 성공:", { adminId: admin._id, username: admin.username });
 
     res.json(
       formatResponse(true, "로그인 성공", {
