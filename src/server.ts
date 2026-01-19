@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { specs, swaggerUi } from "./config/swagger";
+import { validateS3Config } from "./services/s3Service";
 
 // 한국 시간대 설정
 process.env.TZ = "Asia/Seoul";
@@ -19,6 +20,7 @@ import geocodingRouter from "./routes/geocoding";
 import experienceRouter from "./routes/experience";
 import demoRouter from "./routes/demo";
 import liveRouter from "./routes/live";
+import imageRouter from "./routes/imageRoutes"; // 이미지 업로드 라우터
 
 dotenv.config();
 
@@ -97,6 +99,15 @@ mongoose
   .then(() => console.log("MongoDB 연결 성공"))
   .catch((err: Error) => console.error("MongoDB 연결 실패:", err));
 
+// S3 설정 검증
+try {
+  validateS3Config();
+  console.log("S3 설정 검증 완료");
+} catch (error) {
+  console.warn("S3 설정 오류:", error instanceof Error ? error.message : "알 수 없는 오류");
+  console.warn("이미지 업로드 기능이 비활성화됩니다.");
+}
+
 // Add CORS debugging middleware
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -124,6 +135,7 @@ app.use("/api/stores", storesRouter); // 기존 API 호환성 (Store 데이터)
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/admin", adminMainRouter); // 통합 어드민 API
+app.use("/api/admin/stores", imageRouter); // 이미지 업로드 API
 app.use("/api/experience", experienceRouter);
 app.use("/api/geocoding", geocodingRouter);
 

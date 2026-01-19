@@ -45,6 +45,10 @@ export interface IStore extends Document {
   tags?: string[];
   images?: string[];
 
+  // 이미지 URL 가상 필드 (S3에서 생성)
+  representativeImageUrl?: string;
+  imageUrls?: string[];
+
   // QR 코드 연결 (역참조) - 새로운 구조
   qrCodes?: Types.ObjectId[];
 

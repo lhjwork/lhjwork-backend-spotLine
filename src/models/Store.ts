@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IStore } from "../types";
+import { getImageUrl, getImageUrls } from "../services/s3Service";
 
 const storeSchema = new Schema<IStore>({
   name: {
@@ -56,7 +57,7 @@ const storeSchema = new Schema<IStore>({
     maxlength: 500, // 접힘 UI용 상세 설명
     trim: true,
   },
-  representativeImage: String, // 대표 이미지 1장만
+  representativeImage: String, // S3 키로 저장
   externalLinks: {
     instagram: String,
     blog: String,
@@ -66,7 +67,7 @@ const storeSchema = new Schema<IStore>({
   // 기존 필드들 (호환성 유지)
   description: String,
   tags: [String],
-  images: [String],
+  images: [String], // S3 키 배열로 저장
 
   // QR 코드 연결 (역참조) - 새로운 구조
   qrCodes: [
@@ -113,5 +114,18 @@ storeSchema.index({ "location.coordinates": "2dsphere" });
 // qrCode.id는 스키마에서 unique: true로 이미 인덱스가 생성되므로 중복 제거
 storeSchema.index({ category: 1 });
 storeSchema.index({ "location.area": 1 });
+
+// 이미지 URL 가상 필드 추가
+storeSchema.virtual("representativeImageUrl").get(function() {
+  return this.representativeImage ? getImageUrl(this.representativeImage) : "";
+});
+
+storeSchema.virtual("imageUrls").get(function() {
+  return this.images ? getImageUrls(this.images) : [];
+});
+
+// JSON 변환 시 가상 필드 포함
+storeSchema.set("toJSON", { virtuals: true });
+storeSchema.set("toObject", { virtuals: true });
 
 export default mongoose.model<IStore>("Store", storeSchema);

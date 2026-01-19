@@ -1,0 +1,297 @@
+{
+  "info": {
+    "name": "Spotline S3 Image Upload API",
+    "description": "S3 이미지 업로드 API 테스트 컬렉션",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4002/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "storeId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        console.log('Token saved:', response.data.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Store Management",
+      "item": [
+        {
+          "name": "Get All Stores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.stores.length > 0) {",
+                  "        pm.collectionVariables.set('storeId', response.data.stores[0]._id);",
+                  "        console.log('Store ID saved:', response.data.stores[0]._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores"]
+            }
+          }
+        },
+        {
+          "name": "Get Store by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Image Upload",
+      "item": [
+        {
+          "name": "Upload Representative Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "대표 이미지 파일 (JPG, PNG, WebP, 최대 5MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}/representative-image",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}", "representative-image"]
+            }
+          }
+        },
+        {
+          "name": "Upload Gallery Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "갤러리 이미지 파일 1"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "갤러리 이미지 파일 2"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "갤러리 이미지 파일 3 (선택사항)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}/images",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}", "images"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Image Delete",
+      "item": [
+        {
+          "name": "Delete Representative Image",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}/representative-image",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}", "representative-image"]
+            }
+          }
+        },
+        {
+          "name": "Delete Gallery Image",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}/images/{{imageKey}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}", "images", "{{imageKey}}"],
+              "variable": [
+                {
+                  "key": "imageKey",
+                  "value": "stores%2Fstore-123%2Fgallery%2Fuuid-filename.jpg",
+                  "description": "URL 인코딩된 이미지 키"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Testing",
+      "item": [
+        {
+          "name": "Upload Large File (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "5MB 초과 파일로 테스트"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}/representative-image",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}", "representative-image"]
+            }
+          }
+        },
+        {
+          "name": "Upload Without Auth (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/stores/{{storeId}}/representative-image",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stores", "{{storeId}}", "representative-image"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

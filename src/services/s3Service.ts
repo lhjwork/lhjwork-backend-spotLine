@@ -1,0 +1,157 @@
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
+
+// S3 클라이언트 초기화
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || "ap-northeast-2",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+const BUCKET_NAME = process.env.AWS_S3_BUCKET!;
+const BUCKET_URL = process.env.AWS_S3_BUCKET_URL!;
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || "5242880"); // 5MB
+const ALLOWED_TYPES = (process.env.ALLOWED_IMAGE_TYPES || "image/jpeg,image/png,image/webp").split(",");
+
+export interface UploadResult {
+  imageKey: string;
+  imageUrl: string;
+  uploadedAt: Date;
+}
+
+/**
+ * 이미지를 S3에 업로드합니다
+ */
+export const uploadImage = async (
+  file: Express.Multer.File,
+  storeId: string,
+  imageType: "representative" | "gallery"
+): Promise<UploadResult> => {
+  try {
+    // 파일 검증
+    validateFile(file);
+
+    // 이미지 최적화
+    const optimizedBuffer = await optimizeImage(file.buffer);
+
+    // S3 키 생성
+    const fileExtension = getFileExtension(file.originalname);
+    const fileName = `${uuidv4()}-${file.originalname}`;
+    const imageKey = `stores/${storeId}/${imageType}/${fileName}`;
+
+    // S3 업로드
+    const uploadCommand = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: imageKey,
+      Body: optimizedBuffer,
+      ContentType: file.mimetype,
+      CacheControl: "max-age=31536000", // 1년 캐시
+    });
+
+    await s3Client.send(uploadCommand);
+
+    return {
+      imageKey,
+      imageUrl: `${BUCKET_URL}/${imageKey}`,
+      uploadedAt: new Date(),
+    };
+  } catch (error) {
+    console.error("S3 업로드 오류:", error);
+    throw new Error("이미지 업로드에 실패했습니다");
+  }
+};
+
+/**
+ * S3에서 이미지를 삭제합니다
+ */
+export const deleteImage = async (imageKey: string): Promise<void> => {
+  try {
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: imageKey,
+    });
+
+    await s3Client.send(deleteCommand);
+  } catch (error) {
+    console.error("S3 삭제 오류:", error);
+    throw new Error("이미지 삭제에 실패했습니다");
+  }
+};
+
+/**
+ * S3 키로부터 이미지 URL을 생성합니다
+ */
+export const getImageUrl = (imageKey: string): string => {
+  if (!imageKey) return "";
+  return `${BUCKET_URL}/${imageKey}`;
+};
+
+/**
+ * 이미지 키 배열을 URL 배열로 변환합니다
+ */
+export const getImageUrls = (imageKeys: string[]): string[] => {
+  return imageKeys.filter(key => key).map(key => getImageUrl(key));
+};
+
+/**
+ * 파일 검증
+ */
+const validateFile = (file: Express.Multer.File): void => {
+  // 파일 크기 검증
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`파일 크기가 너무 큽니다. 최대 ${MAX_FILE_SIZE / 1024 / 1024}MB까지 업로드 가능합니다.`);
+  }
+
+  // 파일 형식 검증
+  if (!ALLOWED_TYPES.includes(file.mimetype)) {
+    throw new Error("지원하지 않는 파일 형식입니다. JPG, PNG, WebP만 업로드 가능합니다.");
+  }
+};
+
+/**
+ * 이미지 최적화
+ */
+const optimizeImage = async (buffer: Buffer): Promise<Buffer> => {
+  try {
+    return await sharp(buffer)
+      .resize(1920, 1080, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  } catch (error) {
+    console.error("이미지 최적화 오류:", error);
+    // 최적화 실패 시 원본 반환
+    return buffer;
+  }
+};
+
+/**
+ * 파일 확장자 추출
+ */
+const getFileExtension = (filename: string): string => {
+  return filename.split(".").pop()?.toLowerCase() || "";
+};
+
+/**
+ * S3 설정 검증
+ */
+export const validateS3Config = (): void => {
+  const requiredEnvVars = [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_REGION",
+    "AWS_S3_BUCKET",
+    "AWS_S3_BUCKET_URL",
+  ];
+
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+  if (missingVars.length > 0) {
+    throw new Error(`필수 환경 변수가 설정되지 않았습니다: ${missingVars.join(", ")}`);
+  }
+};
