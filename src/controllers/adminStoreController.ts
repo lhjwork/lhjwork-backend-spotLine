@@ -32,15 +32,35 @@ export const createAdminStore = async (req: AuthenticatedRequest, res: Response)
       return;
     }
 
+    // 클라이언트에서 보낸 coordinates 배열을 GeoJSON 형식으로 변환
     const storeData = {
       ...req.body,
       createdBy: req.admin.adminId
     };
 
+    // location.coordinates가 배열 형태로 온 경우 GeoJSON 형식으로 변환
+    if (storeData.location && Array.isArray(storeData.location.coordinates)) {
+      storeData.location.coordinates = {
+        type: "Point",
+        coordinates: storeData.location.coordinates
+      };
+    }
+
+    // contact 필드 정리 (전화번호에서 불필요한 텍스트 제거)
+    if (storeData.contact && storeData.contact.phone) {
+      storeData.contact.phone = storeData.contact.phone.replace(/[^0-9-]/g, '');
+    }
+
+    // businessHours가 빈 객체인 경우 undefined로 설정
+    if (storeData.businessHours && Object.keys(storeData.businessHours).length === 0) {
+      delete storeData.businessHours;
+    }
+
     const store = await storeService.createStore(storeData);
     res.status(HTTP_STATUS.CREATED).json(formatResponse(true, "매장이 성공적으로 등록되었습니다", store));
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다";
+    console.error("매장 생성 오류:", error);
     res.status(HTTP_STATUS.BAD_REQUEST).json(formatResponse(false, errorMessage, null, HTTP_STATUS.BAD_REQUEST));
   }
 };

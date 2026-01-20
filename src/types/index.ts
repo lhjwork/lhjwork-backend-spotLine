@@ -33,7 +33,7 @@ export interface IStore extends Document {
   // SpotLine 정체성에 맞는 필드들
   shortDescription?: string; // 한 문장 설명
   spotlineStory?: string; // 접힘 UI용 상세 설명
-  representativeImage?: string; // 대표 이미지 1장
+  mainBannerImages?: string[]; // 메인 배너 이미지들 (최대 5개)
   externalLinks?: {
     instagram?: string;
     blog?: string;
@@ -43,11 +43,11 @@ export interface IStore extends Document {
   // 기존 필드들 (호환성 유지)
   description?: string;
   tags?: string[];
-  images?: string[];
 
   // 이미지 URL 가상 필드 (S3에서 생성)
-  representativeImageUrl?: string;
-  imageUrls?: string[];
+  mainBannerImageUrls?: string[];
+  representativeImageUrl?: string; // 호환성용 (첫 번째 배너 이미지)
+  imageUrls?: string[]; // 호환성용
 
   // QR 코드 연결 (역참조) - 새로운 구조
   qrCodes?: Types.ObjectId[];
@@ -174,12 +174,11 @@ export interface CreateStoreRequest {
   // SpotLine 정체성에 맞는 필드들
   shortDescription?: string;
   spotlineStory?: string;
-  representativeImage?: string;
+  mainBannerImages?: string[]; // 메인 배너 이미지들
   externalLinks?: IStore["externalLinks"];
   // 기존 필드들 (호환성 유지)
   description?: string;
   tags?: string[];
-  images?: string[];
   isActive?: boolean;
   active?: boolean; // 관리자용 필드
   createdBy?: string;

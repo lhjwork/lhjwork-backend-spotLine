@@ -1,85 +1,7 @@
 import { Request, Response } from "express";
 import { formatResponse } from "../utils/responseFormatter";
 import { HTTP_STATUS } from "../utils/constants";
-
-// 임시 QR 코드 데이터 (실제 구현에서는 MongoDB에서 조회)
-const SAMPLE_QR_CODES = [
-  {
-    qrId: "qr_live_store_001_001",
-    storeId: "live_store_001",
-    location: "entrance",
-    isActive: true,
-    createdAt: new Date("2024-01-01")
-  },
-  {
-    qrId: "qr_live_store_001_002", 
-    storeId: "live_store_001",
-    location: "table",
-    isActive: true,
-    createdAt: new Date("2024-01-02")
-  },
-  {
-    qrId: "qr_live_store_002_001",
-    storeId: "live_store_002",
-    location: "counter",
-    isActive: true,
-    createdAt: new Date("2024-01-03")
-  }
-];
-
-// 매장 데이터 참조 (실제로는 별도 서비스에서 가져옴)
-const SAMPLE_LIVE_STORES = [
-  {
-    storeId: "live_store_001",
-    name: "강남 브런치 카페",
-    description: "신선한 재료로 만든 건강한 브런치와 스페셜티 커피",
-    category: "cafe",
-    location: {
-      address: "서울시 강남구 테헤란로 152",
-      coordinates: [127.0276, 37.4979]
-    },
-    images: {
-      representative: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80"
-    },
-    spotlineStory: {
-      title: "건강한 아침을 시작하는 곳",
-      content: "매일 새벽 5시부터 준비하는 신선한 재료로 건강하고 맛있는 브런치를 제공합니다.",
-      tags: ["브런치", "건강식", "스페셜티커피"]
-    },
-    status: "active",
-    analytics: {
-      totalViews: 1247,
-      monthlyViews: 89,
-      qrScans: 156,
-      recommendations: 23
-    }
-  },
-  {
-    storeId: "live_store_002",
-    name: "홍대 수제 베이커리", 
-    description: "매일 구워내는 신선한 빵과 디저트",
-    category: "bakery",
-    location: {
-      address: "서울시 마포구 홍익로 25",
-      coordinates: [126.9240, 37.5563]
-    },
-    images: {
-      representative: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80"
-    },
-    spotlineStory: {
-      title: "매일 새로 굽는 행복",
-      content: "전통 방식으로 발효시킨 천연 효모빵과 계절 과일을 사용한 디저트를 만나보세요.",
-      tags: ["수제빵", "천연효모", "계절디저트"]
-    },
-    status: "active",
-    analytics: {
-      totalViews: 892,
-      monthlyViews: 67,
-      qrScans: 134,
-      recommendations: 18
-    }
-  }
-];
+import * as storeService from "../services/storeService";
 
 /**
  * GET /api/live/qr/:qrId
@@ -89,10 +11,10 @@ export const getStoreByQR = async (req: Request, res: Response): Promise<void> =
   try {
     const { qrId } = req.params;
 
-    // QR 코드 유효성 확인
-    const qrCode = SAMPLE_QR_CODES.find(qr => qr.qrId === qrId && qr.isActive);
+    // 실제 DB에서 QR 코드로 매장 조회
+    const store = await storeService.getStoreByQR(qrId);
     
-    if (!qrCode) {
+    if (!store) {
       res.status(HTTP_STATUS.NOT_FOUND).json(
         formatResponse(
           false,
@@ -102,37 +24,15 @@ export const getStoreByQR = async (req: Request, res: Response): Promise<void> =
           {
             system: "live",
             qrId,
-            reason: "QR code not found or inactive"
+            reason: "QR code not found or store inactive"
           }
         )
       );
       return;
     }
 
-    // 매장 정보 조회
-    const store = SAMPLE_LIVE_STORES.find(s => s.storeId === qrCode.storeId && s.status === 'active');
-    
-    if (!store) {
-      res.status(HTTP_STATUS.NOT_FOUND).json(
-        formatResponse(
-          false,
-          "매장 정보를 찾을 수 없습니다.",
-          null,
-          HTTP_STATUS.NOT_FOUND,
-          {
-            system: "live",
-            qrId,
-            storeId: qrCode.storeId,
-            reason: "Store not found or inactive"
-          }
-        )
-      );
-      return;
-    }
-
-    // QR 스캔 통계 업데이트 (실제 구현에서는 DB 업데이트)
-    store.analytics.qrScans += 1;
-    store.analytics.totalViews += 1;
+    // TODO: QR 스캔 통계 업데이트 (Analytics 모델 구현 후)
+    // await analyticsService.incrementQRScans(store._id, qrId);
 
     res.json(
       formatResponse(
@@ -140,31 +40,29 @@ export const getStoreByQR = async (req: Request, res: Response): Promise<void> =
         "QR 코드로 매장 정보를 성공적으로 가져왔습니다.",
         {
           store: {
-            id: store.storeId,
+            id: store._id,
             name: store.name,
-            shortDescription: store.description,
-            representativeImage: store.images.representative,
+            shortDescription: store.shortDescription || store.description,
+            representativeImage: store.mainBannerImages?.[0] || null,
             category: store.category,
             location: store.location,
             spotlineStory: store.spotlineStory
           },
           qrInfo: {
-            qrId: qrCode.qrId,
-            location: qrCode.location,
+            qrId: qrId,
             scannedAt: new Date().toISOString()
           }
         },
         HTTP_STATUS.OK,
         {
           system: "live",
-          scanIncremented: true,
-          totalScans: store.analytics.qrScans,
+          scanIncremented: false, // Analytics 구현 후 true로 변경
           timestamp: new Date().toISOString()
         }
       )
     );
 
-    console.log(`[LIVE] QR scanned - QrId: ${qrId}, StoreId: ${store.storeId}, Location: ${qrCode.location}, Total scans: ${store.analytics.qrScans}`);
+    console.log(`[LIVE] QR scanned - QrId: ${qrId}, StoreId: ${store._id}`);
   } catch (error) {
     console.error("Live QR get error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
@@ -198,9 +96,9 @@ export const generateQRCode = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // 매장 존재 확인
-    const store = SAMPLE_LIVE_STORES.find(s => s.storeId === storeId && s.status === 'active');
-    if (!store) {
+    // 실제 DB에서 매장 존재 확인
+    const store = await storeService.getStoreById(storeId);
+    if (!store || !store.isActive) {
       res.status(HTTP_STATUS.NOT_FOUND).json(
         formatResponse(
           false,
@@ -212,20 +110,11 @@ export const generateQRCode = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // QR 코드 ID 생성
+    // QR 코드 ID 생성 (실제로는 QRCode 모델에 저장)
     const qrId = `qr_${storeId}_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 
-    // QR 코드 데이터 생성
-    const newQRCode = {
-      qrId,
-      storeId,
-      location,
-      isActive: true,
-      createdAt: new Date()
-    };
-
-    // 실제 구현에서는 MongoDB에 저장
-    SAMPLE_QR_CODES.push(newQRCode);
+    // TODO: QRCode 모델에 저장
+    // const newQRCode = await QRCode.create({ qrId, storeId, location, isActive: true });
 
     // QR 코드 URL 생성
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -242,7 +131,7 @@ export const generateQRCode = async (req: Request, res: Response): Promise<void>
           downloadUrl,
           location,
           storeInfo: {
-            storeId: store.storeId,
+            storeId: store._id,
             name: store.name
           },
           usage: {
@@ -254,8 +143,7 @@ export const generateQRCode = async (req: Request, res: Response): Promise<void>
         HTTP_STATUS.OK,
         {
           system: "live",
-          generatedAt: new Date().toISOString(),
-          totalQRCodes: SAMPLE_QR_CODES.filter(qr => qr.storeId === storeId).length
+          generatedAt: new Date().toISOString()
         }
       )
     );
@@ -282,19 +170,9 @@ export const downloadQRCode = async (req: Request, res: Response): Promise<void>
   try {
     const { qrId } = req.params;
 
-    // QR 코드 확인
-    const qrCode = SAMPLE_QR_CODES.find(qr => qr.qrId === qrId);
-    if (!qrCode) {
-      res.status(HTTP_STATUS.NOT_FOUND).json(
-        formatResponse(
-          false,
-          "QR 코드를 찾을 수 없습니다.",
-          null,
-          HTTP_STATUS.NOT_FOUND
-        )
-      );
-      return;
-    }
+    // TODO: QRCode 모델에서 확인
+    // const qrCode = await QRCode.findOne({ qrId, isActive: true });
+    // if (!qrCode) { ... }
 
     // 실제 구현에서는 QR 코드 이미지 생성 라이브러리 사용
     // 예: qrcode, node-qrcode 등

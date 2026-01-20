@@ -261,6 +261,82 @@ router.get("/live/settings", authenticateAdmin, adminLiveController.getLiveSetti
 router.put("/live/settings", authenticateAdmin, adminLiveController.updateLiveSettings);
 
 // ==========================================
+// Live 시스템 이미지 업로드
+// ==========================================
+
+// 이미지 업로드 미들웨어 import
+import { uploadSingle, uploadMultiple, handleUploadError } from "../middleware/imageUpload";
+import * as imageController from "../controllers/imageController";
+
+/**
+ * @swagger
+ * /api/admin/live/stores/{storeId}/main-banner-images:
+ *   post:
+ *     summary: Live 매장 메인 배너 이미지 업로드 (최대 5개)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: storeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 매장 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: 메인 배너 이미지 업로드 성공
+ *       400:
+ *         description: 잘못된 요청 (최대 5개 제한)
+ *       401:
+ *         description: 인증 실패
+ *       404:
+ *         description: 매장을 찾을 수 없음
+ */
+router.post("/live/stores/:storeId/main-banner-images", authenticateAdmin, uploadSingle, handleUploadError, imageController.uploadMainBannerImage);
+
+/**
+ * @swagger
+ * /api/admin/live/stores/{storeId}/main-banner-images/{imageKey}:
+ *   delete:
+ *     summary: Live 매장 메인 배너 이미지 삭제
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: storeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 매장 ID
+ *       - in: path
+ *         name: imageKey
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 삭제할 이미지의 S3 키 (URL 인코딩 필요)
+ *     responses:
+ *       200:
+ *         description: 메인 배너 이미지 삭제 성공
+ *       401:
+ *         description: 인증 실패
+ *       404:
+ *         description: 매장 또는 이미지를 찾을 수 없음
+ */
+router.delete("/live/stores/:storeId/main-banner-images/:imageKey", authenticateAdmin, imageController.deleteMainBannerImage);
+
+// ==========================================
 // 시스템 관리
 // ==========================================
 

@@ -140,7 +140,7 @@ export const getRecommendationsForStore = async (storeId: string): Promise<any[]
       id: rec.toStore._id,
       name: rec.toStore.name,
       shortDescription: rec.toStore.shortDescription,
-      image: rec.toStore.representativeImage,
+      image: rec.toStore.mainBannerImages?.[0] || null,
       qrId: rec.toStore.qrCode.id,
       area: rec.toStore.location.area,
       category: rec.category,
@@ -167,29 +167,43 @@ export const getAdminStores = async (filters: AdminStoreFilters = {}): Promise<{
   totalPages: number;
   currentPage: number;
 }> => {
-  const { category, area, active, page = 1, limit = 20 } = filters;
-  const filter: any = {};
+  try {
+    const { category, area, active, page = 1, limit = 20 } = filters;
+    const filter: any = {};
 
-  if (category) filter.category = category;
-  if (area) filter["location.area"] = area;
-  if (active !== undefined) filter.isActive = active === "true";
+    if (category) filter.category = category;
+    if (area) filter["location.area"] = area;
+    if (active !== undefined) filter.isActive = active === "true";
 
-  const skip = (page - 1) * limit;
-  
-  const [stores, totalCount] = await Promise.all([
-    Store.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    Store.countDocuments(filter)
-  ]);
+    console.log(`[DEBUG] getAdminStores filter:`, filter);
+    console.log(`[DEBUG] getAdminStores pagination:`, { page, limit, skip: (page - 1) * limit });
 
-  return {
-    stores,
-    totalCount,
-    totalPages: Math.ceil(totalCount / limit),
-    currentPage: page
-  };
+    const skip = (page - 1) * limit;
+    
+    const [stores, totalCount] = await Promise.all([
+      Store.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Store.countDocuments(filter)
+    ]);
+
+    console.log(`[DEBUG] getAdminStores DB result:`, {
+      storesFound: stores.length,
+      totalCount,
+      firstStore: stores[0] ? { id: stores[0]._id, name: stores[0].name } : null
+    });
+
+    return {
+      stores,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page
+    };
+  } catch (error) {
+    console.error(`[ERROR] getAdminStores failed:`, error);
+    throw error;
+  }
 };
 
 // 매장 통계 조회

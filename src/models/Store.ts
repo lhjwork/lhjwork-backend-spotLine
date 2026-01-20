@@ -57,7 +57,7 @@ const storeSchema = new Schema<IStore>({
     maxlength: 500, // 접힘 UI용 상세 설명
     trim: true,
   },
-  representativeImage: String, // S3 키로 저장
+  mainBannerImages: [String], // 메인 배너 이미지들 (최대 5개, S3 키 배열)
   externalLinks: {
     instagram: String,
     blog: String,
@@ -67,7 +67,7 @@ const storeSchema = new Schema<IStore>({
   // 기존 필드들 (호환성 유지)
   description: String,
   tags: [String],
-  images: [String], // S3 키 배열로 저장
+  // images 필드 제거 - mainBannerImages로 통합
 
   // QR 코드 연결 (역참조) - 새로운 구조
   qrCodes: [
@@ -115,13 +115,20 @@ storeSchema.index({ "location.coordinates": "2dsphere" });
 storeSchema.index({ category: 1 });
 storeSchema.index({ "location.area": 1 });
 
-// 이미지 URL 가상 필드 추가
+// 메인 배너 이미지 URL 가상 필드 추가
+storeSchema.virtual("mainBannerImageUrls").get(function() {
+  return this.mainBannerImages ? getImageUrls(this.mainBannerImages) : [];
+});
+
+// 호환성을 위한 가상 필드들
 storeSchema.virtual("representativeImageUrl").get(function() {
-  return this.representativeImage ? getImageUrl(this.representativeImage) : "";
+  return this.mainBannerImages && this.mainBannerImages.length > 0 
+    ? getImageUrl(this.mainBannerImages[0]) 
+    : "";
 });
 
 storeSchema.virtual("imageUrls").get(function() {
-  return this.images ? getImageUrls(this.images) : [];
+  return this.mainBannerImages ? getImageUrls(this.mainBannerImages) : [];
 });
 
 // JSON 변환 시 가상 필드 포함

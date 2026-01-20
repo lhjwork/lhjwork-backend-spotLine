@@ -78,7 +78,7 @@ export const getNextSpots = async (fromStoreId: string, limit: number = 4): Prom
           id: toStore._id,
           name: toStore.name,
           shortDescription: toStore.shortDescription || toStore.description?.substring(0, 100) || rec.description,
-          representativeImage: toStore.representativeImage || toStore.images?.[0],
+          representativeImage: toStore.mainBannerImages?.[0] || null,
           mapLink: `https://maps.google.com/?q=${toStore.location.coordinates.coordinates[1]},${toStore.location.coordinates.coordinates[0]}`,
           category: rec.category,
           walkingTime: rec.walkingTime,

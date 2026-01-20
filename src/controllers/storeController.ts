@@ -135,7 +135,7 @@ export const getSpotlineStoreById = async (req: Request<{ storeId: string }, {},
       id: store._id,
       name: store.name,
       shortDescription: store.shortDescription || store.description?.substring(0, 100),
-      representativeImage: store.representativeImage || store.images?.[0],
+      representativeImage: store.mainBannerImages?.[0] || null,
       location: {
         address: store.location.address,
         coordinates: store.location.coordinates,
@@ -177,7 +177,7 @@ export const getSpotlineStoreByQR = async (req: Request<{ qrId: string }>, res: 
       id: store._id,
       name: store.name,
       shortDescription: store.shortDescription || store.description?.substring(0, 100),
-      representativeImage: store.representativeImage || store.images?.[0],
+      representativeImage: store.mainBannerImages?.[0] || null,
       location: {
         address: store.location.address,
         coordinates: store.location.coordinates,

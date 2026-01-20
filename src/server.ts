@@ -136,6 +136,7 @@ app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/admin", adminMainRouter); // 통합 어드민 API
 app.use("/api/admin/stores", imageRouter); // 이미지 업로드 API
+app.use("/api/upload", imageRouter); // 호환성을 위한 이미지 업로드 API
 app.use("/api/experience", experienceRouter);
 app.use("/api/geocoding", geocodingRouter);
 

@@ -24,7 +24,7 @@ Spotline 어드민 패널에 S3 이미지 업로드 기능을 구현해주세요
 
 ### 서버 정보
 ```
-Base URL: http://localhost:4002/api
+Base URL: http://localhost:4001/api
 로그인: POST /admin/auth/login
 - username: "admin"
 - password: "admin123"

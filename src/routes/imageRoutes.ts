@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticateAdmin } from "../middleware/adminAuth";
-import { uploadSingle, uploadMultiple, handleUploadError } from "../middleware/imageUpload";
+import { uploadSingle, handleUploadError } from "../middleware/imageUpload";
 import * as imageController from "../controllers/imageController";
 
 const router = Router();
@@ -10,9 +10,9 @@ router.use(authenticateAdmin);
 
 /**
  * @swagger
- * /admin/stores/{storeId}/representative-image:
+ * /admin/stores/{storeId}/main-banner-images:
  *   post:
- *     summary: 대표 이미지 업로드
+ *     summary: 메인 배너 이미지 업로드 (최대 5개)
  *     tags: [Admin Images]
  *     security:
  *       - bearerAuth: []
@@ -36,7 +36,7 @@ router.use(authenticateAdmin);
  *                 description: 업로드할 이미지 파일 (JPG, PNG, WebP, 최대 5MB)
  *     responses:
  *       200:
- *         description: 대표 이미지 업로드 성공
+ *         description: 메인 배너 이미지 업로드 성공
  *         content:
  *           application/json:
  *             schema:
@@ -56,8 +56,10 @@ router.use(authenticateAdmin);
  *                     uploadedAt:
  *                       type: string
  *                       format: date-time
+ *                     totalMainBannerImages:
+ *                       type: number
  *       400:
- *         description: 잘못된 요청 (파일 없음, 형식 오류, 크기 초과)
+ *         description: 잘못된 요청 (파일 없음, 형식 오류, 크기 초과, 최대 5개 제한)
  *       401:
  *         description: 인증 실패
  *       404:
@@ -65,106 +67,13 @@ router.use(authenticateAdmin);
  *       500:
  *         description: 서버 오류
  */
-router.post("/:storeId/representative-image", uploadSingle, handleUploadError, imageController.uploadRepresentativeImage);
+router.post("/:storeId/main-banner-images", uploadSingle, handleUploadError, imageController.uploadMainBannerImage);
 
 /**
  * @swagger
- * /admin/stores/{storeId}/images:
- *   post:
- *     summary: 갤러리 이미지 업로드 (다중)
- *     tags: [Admin Images]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: storeId
- *         required: true
- *         schema:
- *           type: string
- *         description: 상점 ID
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               images:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: binary
- *                 description: 업로드할 이미지 파일들 (최대 5개, JPG, PNG, WebP, 각각 최대 5MB)
- *     responses:
- *       200:
- *         description: 갤러리 이미지 업로드 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     uploadedImages:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           imageKey:
- *                             type: string
- *                           imageUrl:
- *                             type: string
- *                     uploadedAt:
- *                       type: string
- *                       format: date-time
- *       400:
- *         description: 잘못된 요청
- *       401:
- *         description: 인증 실패
- *       404:
- *         description: 상점을 찾을 수 없음
- *       500:
- *         description: 서버 오류
- */
-router.post("/:storeId/images", uploadMultiple, handleUploadError, imageController.uploadGalleryImages);
-
-/**
- * @swagger
- * /admin/stores/{storeId}/representative-image:
+ * /admin/stores/{storeId}/main-banner-images/{imageKey}:
  *   delete:
- *     summary: 대표 이미지 삭제
- *     tags: [Admin Images]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: storeId
- *         required: true
- *         schema:
- *           type: string
- *         description: 상점 ID
- *     responses:
- *       200:
- *         description: 대표 이미지 삭제 성공
- *       401:
- *         description: 인증 실패
- *       404:
- *         description: 상점 또는 이미지를 찾을 수 없음
- *       500:
- *         description: 서버 오류
- */
-router.delete("/:storeId/representative-image", imageController.deleteRepresentativeImage);
-
-/**
- * @swagger
- * /admin/stores/{storeId}/images/{imageKey}:
- *   delete:
- *     summary: 특정 갤러리 이미지 삭제
+ *     summary: 메인 배너 이미지 삭제
  *     tags: [Admin Images]
  *     security:
  *       - bearerAuth: []
@@ -183,7 +92,7 @@ router.delete("/:storeId/representative-image", imageController.deleteRepresenta
  *         description: 삭제할 이미지의 S3 키 (URL 인코딩 필요)
  *     responses:
  *       200:
- *         description: 이미지 삭제 성공
+ *         description: 메인 배너 이미지 삭제 성공
  *       401:
  *         description: 인증 실패
  *       404:
@@ -191,6 +100,6 @@ router.delete("/:storeId/representative-image", imageController.deleteRepresenta
  *       500:
  *         description: 서버 오류
  */
-router.delete("/:storeId/images/:imageKey", imageController.deleteGalleryImage);
+router.delete("/:storeId/main-banner-images/:imageKey", imageController.deleteMainBannerImage);
 
 export default router;

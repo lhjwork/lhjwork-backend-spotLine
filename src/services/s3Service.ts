@@ -1,20 +1,44 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 
 // S3 클라이언트 초기화
+const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+const awsRegion = process.env.AWS_REGION || "ap-northeast-2";
+
+if (!awsAccessKeyId || !awsSecretAccessKey) {
+  console.error("[ERROR] AWS 자격증명이 설정되지 않았습니다!");
+  console.error("AWS_ACCESS_KEY_ID:", awsAccessKeyId ? "설정됨" : "없음");
+  console.error("AWS_SECRET_ACCESS_KEY:", awsSecretAccessKey ? "설정됨" : "없음");
+}
+
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION || "ap-northeast-2",
+  region: awsRegion,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: awsAccessKeyId!,
+    secretAccessKey: awsSecretAccessKey!,
   },
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET!;
-const BUCKET_URL = process.env.AWS_S3_BUCKET_URL!;
+// S3 설정 - 임시로 하드코딩해서 테스트
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || "lhj-spotline-assets-2026";
+const BUCKET_URL = process.env.AWS_S3_BUCKET_URL || "https://lhj-spotline-assets-2026.s3.ap-northeast-2.amazonaws.com";
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || "5242880"); // 5MB
 const ALLOWED_TYPES = (process.env.ALLOWED_IMAGE_TYPES || "image/jpeg,image/png,image/webp").split(",");
+
+// 환경 변수 디버깅
+console.log("[DEBUG] S3 Environment Variables:");
+console.log("AWS_ACCESS_KEY_ID:", process.env.AWS_ACCESS_KEY_ID ? "***설정됨***" : "undefined");
+console.log("AWS_SECRET_ACCESS_KEY:", process.env.AWS_SECRET_ACCESS_KEY ? "***설정됨***" : "undefined");
+console.log("AWS_S3_BUCKET:", process.env.AWS_S3_BUCKET);
+console.log("AWS_S3_BUCKET_URL:", process.env.AWS_S3_BUCKET_URL);
+console.log("AWS_REGION:", process.env.AWS_REGION);
+console.log("BUCKET_NAME (final):", BUCKET_NAME);
+console.log("BUCKET_URL (final):", BUCKET_URL);
 
 export interface UploadResult {
   imageKey: string;
@@ -28,9 +52,23 @@ export interface UploadResult {
 export const uploadImage = async (
   file: Express.Multer.File,
   storeId: string,
-  imageType: "representative" | "gallery"
+  imageType: "main-banner"
 ): Promise<UploadResult> => {
+  console.log("[DEBUG] S3 uploadImage called with:", { 
+    fileName: file.originalname, 
+    fileSize: file.size, 
+    storeId, 
+    imageType,
+    bucketName: BUCKET_NAME,
+    bucketUrl: BUCKET_URL
+  });
+
   try {
+    // AWS 자격증명 재검증
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      throw new Error("AWS 자격증명이 설정되지 않았습니다. AWS_ACCESS_KEY_ID와 AWS_SECRET_ACCESS_KEY를 확인하세요.");
+    }
+
     // 파일 검증
     validateFile(file);
 
@@ -42,6 +80,13 @@ export const uploadImage = async (
     const fileName = `${uuidv4()}-${file.originalname}`;
     const imageKey = `stores/${storeId}/${imageType}/${fileName}`;
 
+    console.log("[DEBUG] Generated S3 key:", imageKey);
+    console.log("[DEBUG] Using bucket:", BUCKET_NAME);
+
+    if (!BUCKET_NAME) {
+      throw new Error("AWS_S3_BUCKET 환경 변수가 설정되지 않았습니다");
+    }
+
     // S3 업로드
     const uploadCommand = new PutObjectCommand({
       Bucket: BUCKET_NAME,
@@ -51,7 +96,9 @@ export const uploadImage = async (
       CacheControl: "max-age=31536000", // 1년 캐시
     });
 
+    console.log("[DEBUG] Sending upload command to S3...");
     await s3Client.send(uploadCommand);
+    console.log("[DEBUG] S3 upload completed successfully");
 
     return {
       imageKey,
