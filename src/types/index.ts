@@ -287,3 +287,50 @@ export interface CreateExperienceConfigRequest {
 export interface UpdateExperienceConfigRequest extends Partial<CreateExperienceConfigRequest> {
   isActive?: boolean;
 }
+
+// 🆕 지역 기반 추천 관련 타입들
+export interface LocationBasedFilters {
+  category?: string;
+  limit?: number;
+  radius?: number; // 반경 (미터)
+  excludeCurrentStore?: boolean;
+}
+
+export interface LocationBasedRecommendationResponse {
+  currentStore: {
+    id: string;
+    name: string;
+    category: string;
+    address: string;
+  };
+  nearbyStores: Array<{
+    id: string;
+    name: string;
+    category: string;
+    distance: number;
+  }>;
+  existingRecommendations: IRecommendation[];
+  suggestedRecommendations: Array<{
+    store: {
+      id: string;
+      name: string;
+      category: string;
+      shortDescription?: string;
+      address: string;
+      representativeImage?: string;
+    };
+    distance: number;
+    walkingTime: number;
+    suggestedCategory: string;
+    priority: number;
+  }>;
+}
+
+export interface CreateLocationBasedRecommendationsRequest {
+  selectedStores: Array<{
+    toStoreId: string;
+    category: IRecommendation["category"];
+    priority?: number;
+    description?: string;
+  }>;
+}
