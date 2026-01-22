@@ -101,14 +101,8 @@ export const getNearbyStoresForSelection = async (
 
   // 병렬로 두 쿼리 실행
   const [nearbyStores, sameAreaStores] = await Promise.all([
-    Store.find(nearbyQuery)
-      .limit(limit)
-      .select("name category location shortDescription mainBannerImages externalLinks")
-      .lean(),
-    currentArea ? Store.find(sameAreaQuery)
-      .limit(limit)
-      .select("name category location shortDescription mainBannerImages externalLinks")
-      .lean() : []
+    Store.find(nearbyQuery).limit(limit).select("name category location shortDescription mainBannerImages externalLinks").lean(),
+    currentArea ? Store.find(sameAreaQuery).limit(limit).select("name category location shortDescription mainBannerImages externalLinks").lean() : [],
   ]);
 
   // 기존 추천 관계 조회 (이미 연결된 매장들 표시용)
@@ -121,64 +115,54 @@ export const getNearbyStoresForSelection = async (
   const existingToStoreIds = existingRecommendations.map((rec) => rec.toStore._id.toString());
 
   // 거리 기반 매장들에 정보 추가
-  const nearbyStoresWithInfo = nearbyStores.map((store) => {
-    const distance = calculateDistance(
-      latitude, 
-      longitude, 
-      store.location.coordinates.coordinates[1], 
-      store.location.coordinates.coordinates[0]
-    );
+  const nearbyStoresWithInfo = nearbyStores
+    .map((store) => {
+      const distance = calculateDistance(latitude, longitude, store.location.coordinates.coordinates[1], store.location.coordinates.coordinates[0]);
 
-    return {
-      id: store._id,
-      name: store.name,
-      category: store.category,
-      shortDescription: store.shortDescription,
-      address: store.location.address,
-      area: store.location.area,
-      representativeImage: store.mainBannerImages?.[0] || null,
-      externalLinks: store.externalLinks,
-      distance: Math.round(distance),
-      walkingTime: Math.round(distance / 80), // 평균 도보 속도 80m/분
-      isAlreadyConnected: existingToStoreIds.includes(store._id.toString()),
-      suggestedCategories: getSuggestedCategories(currentStore.category, store.category),
-      matchType: "distance" // 거리 기반 매칭
-    };
-  })
-  .sort((a, b) => a.distance - b.distance); // 거리순 정렬
+      return {
+        id: store._id,
+        name: store.name,
+        category: store.category,
+        shortDescription: store.shortDescription,
+        address: store.location.address,
+        area: store.location.area,
+        representativeImage: store.mainBannerImages?.[0] || null,
+        externalLinks: store.externalLinks,
+        distance: Math.round(distance),
+        walkingTime: Math.round(distance / 80), // 평균 도보 속도 80m/분
+        isAlreadyConnected: existingToStoreIds.includes(store._id.toString()),
+        suggestedCategories: getSuggestedCategories(currentStore.category, store.category),
+        matchType: "distance", // 거리 기반 매칭
+      };
+    })
+    .sort((a, b) => a.distance - b.distance); // 거리순 정렬
 
   // 같은 지역 매장들에 정보 추가
-  const sameAreaStoresWithInfo = sameAreaStores.map((store) => {
-    const distance = calculateDistance(
-      latitude, 
-      longitude, 
-      store.location.coordinates.coordinates[1], 
-      store.location.coordinates.coordinates[0]
-    );
+  const sameAreaStoresWithInfo = sameAreaStores
+    .map((store) => {
+      const distance = calculateDistance(latitude, longitude, store.location.coordinates.coordinates[1], store.location.coordinates.coordinates[0]);
 
-    return {
-      id: store._id,
-      name: store.name,
-      category: store.category,
-      shortDescription: store.shortDescription,
-      address: store.location.address,
-      area: store.location.area,
-      representativeImage: store.mainBannerImages?.[0] || null,
-      externalLinks: store.externalLinks,
-      distance: Math.round(distance),
-      walkingTime: Math.round(distance / 80),
-      isAlreadyConnected: existingToStoreIds.includes(store._id.toString()),
-      suggestedCategories: getSuggestedCategories(currentStore.category, store.category),
-      matchType: "area" // 지역 기반 매칭
-    };
-  })
-  .sort((a, b) => a.name.localeCompare(b.name)); // 이름순 정렬
+      return {
+        id: store._id,
+        name: store.name,
+        category: store.category,
+        shortDescription: store.shortDescription,
+        address: store.location.address,
+        area: store.location.area,
+        representativeImage: store.mainBannerImages?.[0] || null,
+        externalLinks: store.externalLinks,
+        distance: Math.round(distance),
+        walkingTime: Math.round(distance / 80),
+        isAlreadyConnected: existingToStoreIds.includes(store._id.toString()),
+        suggestedCategories: getSuggestedCategories(currentStore.category, store.category),
+        matchType: "area", // 지역 기반 매칭
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name)); // 이름순 정렬
 
   // 중복 제거 (거리 기반과 지역 기반에서 겹치는 매장들)
-  const nearbyStoreIds = new Set(nearbyStoresWithInfo.map(store => store.id.toString()));
-  const uniqueSameAreaStores = sameAreaStoresWithInfo.filter(
-    store => !nearbyStoreIds.has(store.id.toString())
-  );
+  const nearbyStoreIds = new Set(nearbyStoresWithInfo.map((store) => store.id.toString()));
+  const uniqueSameAreaStores = sameAreaStoresWithInfo.filter((store) => !nearbyStoreIds.has(store.id.toString()));
 
   return {
     currentStore: {
@@ -187,20 +171,10 @@ export const getNearbyStoresForSelection = async (
       category: currentStore.category,
       address: currentStore.location.address,
       area: currentStore.location.area,
-      shortDescription: currentStore.shortDescription
-    },
-    nearbyStores: nearbyStoresWithInfo,
-    sameAreaStores: uniqueSameAreaStores,
-    existingRecommendations
-  };
-};
-      id: currentStore._id,
-      name: currentStore.name,
-      category: currentStore.category,
-      address: currentStore.location.address,
       shortDescription: currentStore.shortDescription,
     },
     nearbyStores: nearbyStoresWithInfo,
+    sameAreaStores: uniqueSameAreaStores,
     existingRecommendations,
   };
 };
@@ -234,10 +208,10 @@ export const createSelectedRecommendations = async (
       recommendations.push(existingRecommendation);
     } else {
       // 새로 생성
-      const recommendationData = {
+      const recommendationData: CreateRecommendationRequest = {
         fromStore: storeId,
         toStore: selection.toStoreId,
-        category: selection.category,
+        category: selection.category as IRecommendation["category"],
         priority: selection.priority || 5,
         description: selection.description || "",
         isActive: true,

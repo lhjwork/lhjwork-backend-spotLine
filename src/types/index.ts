@@ -1,6 +1,19 @@
 import { Document, Types } from "mongoose";
 import { Request } from "express";
 
+// Multer 파일 타입 정의
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+  destination?: string;
+  filename?: string;
+  path?: string;
+}
+
 // 공통 응답 타입
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -120,6 +133,8 @@ export interface AuthenticatedRequest extends Request {
     adminId: string;
     type: string;
   };
+  file?: MulterFile; // multer 파일 업로드용
+  files?: MulterFile[]; // 다중 파일 업로드용
 }
 
 // 환경 변수 타입
